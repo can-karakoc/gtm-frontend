@@ -1,94 +1,113 @@
 'use client'
 
+import { useState } from 'react'
+import useSWR from 'swr'
 import Badge from '@/components/badge'
 import ChartDonut from '@/components/chart-donut'
 import Histogram from '@/components/histogram'
 import { Beaker, Gauge, User, Target, Funnel, Bolt } from '@/components/icons'
+import { fetcher } from '@/lib/api'
 
-// Mock data - matches gtm-engine-dashboard.html pageFunnel()
-const TIERS = [
-  { k: 'clay_full', n: 96, p: '30.8%', sc: 79, sync: '71%' },
-  { k: 'clay_email', n: 121, p: '38.8%', sc: 66, sync: '52%' },
-  { k: 'clay_phone', n: 44, p: '14.1%', sc: 58, sync: '23%' },
-  { k: 'clay_linkedin', n: 28, p: '9.0%', sc: 49, sync: '11%' },
-  { k: 'clay_no_data', n: 23, p: '7.4%', sc: 34, sync: '4%' },
-]
-
-const STATUS_DIST = [
-  { k: 'synced', n: 128 },
-  { k: 'qualified', n: 41 },
-  { k: 'disqualified', n: 96 },
-  { k: 'enriched', n: 18 },
-  { k: 'clay_sent', n: 24 },
-  { k: 'clay_pending', n: 38 },
-  { k: 'ready_to_enrich', n: 73 },
-  { k: 'no_custom_domain', n: 52 },
-  { k: 'publicly_reachable_only', n: 31 },
-  { k: 'no_public_contact', n: 18 },
-  { k: 'needs_review', n: 9 },
-  { k: 'dead', n: 44 },
-  { k: 'not_str', n: 29 },
-  { k: 'churned', n: 12 },
-]
-
-const HIST = [4, 9, 14, 22, 31, 48, 61, 54, 39, 14]
-
-const NAME_SRC = [
-  { l: 'website', v: 78, c: '#4FA0F0' },
-  { l: 'email_name', v: 41, c: '#22D3EE' },
-  { l: 'snov', v: 32, c: '#38BDF8' },
-  { l: 'leadmagic', v: 9, c: '#35D399' },
-  { l: 'clay', v: 5, c: '#8B7BFF' },
-]
-
-const REACH = { yy: 84, yn: 133, ny: 26, nn: 69 }
-
-// Color mapping for tier badges
-const tierColorMap: Record<string, [string, string]> = {
-  clay_full: ['#35D399', 'rgba(53,211,153,.15)'],
-  clay_email: ['#22D3EE', 'rgba(34,211,238,.15)'],
-  clay_phone: ['#F5B13D', 'rgba(245,177,61,.15)'],
-  clay_linkedin: ['#4FA0F0', 'rgba(79,160,240,.15)'],
-  clay_no_data: ['#FB6F84', 'rgba(251,111,132,.15)'],
+// Custom labels for enrichment tiers (matching operators page)
+const TIER_LABELS: Record<string, string> = {
+  'publicly_reachable_only': 'only public info',
+  'pre_enriched': 'pre enriched',
+  'clay_enriched': 'clay enriched',
+  'name_missing': 'name missing',
+  'no_data': 'no data',
+  'no_public_contact': 'no public contact',
+  'clay_no_data': 'clay no data',
+  'name_found': 'name found',
+  'skipped_pms_host': 'skipped pms host',
 }
 
-const statusColorMap: Record<string, [string, string]> = {
-  synced: ['#22D3EE', 'rgba(34,211,238,.15)'],
-  qualified: ['#35D399', 'rgba(53,211,153,.15)'],
-  disqualified: ['#FB6F84', 'rgba(251,111,132,.15)'],
-  enriched: ['#8B7BFF', 'rgba(139,123,255,.15)'],
-  clay_sent: ['#F59E3D', 'rgba(245,158,61,.15)'],
-  clay_pending: ['#F5B13D', 'rgba(245,177,61,.15)'],
-  ready_to_enrich: ['#38BDF8', 'rgba(56,189,248,.15)'],
-  no_custom_domain: ['#5E6E83', 'rgba(94,110,131,.15)'],
-  publicly_reachable_only: ['#38BDF8', 'rgba(56,189,248,.15)'],
-  no_public_contact: ['#FB6F84', 'rgba(251,111,132,.15)'],
-  needs_review: ['#F5B13D', 'rgba(245,177,61,.15)'],
-  dead: ['#5E6E83', 'rgba(94,110,131,.15)'],
-  not_str: ['#5E6E83', 'rgba(94,110,131,.15)'],
-  churned: ['#FB6F84', 'rgba(251,111,132,.15)'],
+// Tier colors (matching badge component)
+const tierColorMap: Record<string, string> = {
+  'pre_enriched': '#35D399',
+  'clay_enriched': '#8B7BFF',
+  'name_missing': '#F59E0B',
+  'no_data': '#5E6E83',
+  'publicly_reachable_only': '#38BDF8',
+  'no_public_contact': '#FB6F84',
+  'clay_no_data': '#FB6F84',
+  'name_found': '#35D399',
+  'skipped_pms_host': '#5E6E83',
+}
+
+// Status colors
+const statusColorMap: Record<string, string> = {
+  synced: '#22D3EE',
+  qualified: '#35D399',
+  disqualified: '#FB6F84',
+  enriched: '#8B7BFF',
+  clay_sent: '#F59E3D',
+  clay_pending: '#F5B13D',
+  ready_to_enrich: '#38BDF8',
+  no_custom_domain: '#5E6E83',
+  publicly_reachable_only: '#38BDF8',
+  no_public_contact: '#FB6F84',
+  needs_review: '#F5B13D',
+  dead: '#5E6E83',
+  not_str: '#5E6E83',
+  churned: '#F59E0B',
+  promoted: '#35D399',
+  raw: '#5E6E83',
+  clean: '#4FA0F0',
+  scored: '#5FD0C0',
 }
 
 export default function FunnelPage() {
-  // Prepare tier segments for donut chart
-  const tierSegs = TIERS.map((t) => ({ v: t.n, c: tierColorMap[t.k][0] }))
-  const totalEnriched = TIERS.reduce((sum, t) => sum + t.n, 0)
+  // Fetch funnel data from API
+  const { data: tierData } = useSWR('/api/data/funnel/enrichment-tiers', fetcher)
+  const { data: scoreData } = useSWR('/api/data/funnel/score-distribution', fetcher)
+  const { data: reachData } = useSWR('/api/data/funnel/reachability-matrix', fetcher)
+  const { data: statusCounts } = useSWR('/api/data/status-counts', fetcher)
 
-  // Prepare name source segments for donut chart
+  const tiers = tierData?.tiers || []
+  const totalEnriched = tierData?.total || 0
+
+  const scoreBins = scoreData?.bins || []
+  const qualifyThreshold = scoreData?.qualify_threshold || 55
+
+  const reach = {
+    yy: reachData?.email_phone || 0,
+    yn: reachData?.email_only || 0,
+    ny: reachData?.phone_only || 0,
+    nn: reachData?.neither || 0,
+  }
+  const reachPercentages = reachData?.percentages || {}
+
+  // Status distribution
+  const statusDist = statusCounts
+    ? Object.entries(statusCounts).map(([k, n]) => ({ k, n: n as number }))
+    : []
+  const maxStatusN = statusDist.length > 0 ? Math.max(...statusDist.map((s) => s.n)) : 1
+  const totalOperators = statusDist.reduce((sum, s) => sum + s.n, 0)
+
+  // Prepare tier segments for donut chart
+  const tierSegs = tiers.map((t: any) => ({
+    v: t.count,
+    c: tierColorMap[t.tier] || '#9CA9BA'
+  }))
+
+  // Mock name source data (TODO: add API endpoint when name_source tracking is added)
+  const NAME_SRC = [
+    { l: 'website', v: 78, c: '#4FA0F0' },
+    { l: 'email_name', v: 41, c: '#22D3EE' },
+    { l: 'snov', v: 32, c: '#38BDF8' },
+    { l: 'leadmagic', v: 9, c: '#35D399' },
+    { l: 'clay', v: 5, c: '#8B7BFF' },
+  ]
   const nameSegs = NAME_SRC.map((s) => ({ v: s.v, c: s.c }))
   const nameTot = NAME_SRC.reduce((sum, s) => sum + s.v, 0)
 
-  // Calculate confidence distribution (mock data from HTML)
+  // Mock confidence data (TODO: add API endpoint)
   const conf = [
     { label: 'high', count: 121, color: '#35D399' },
     { label: 'medium', count: 33, color: '#F5B13D' },
     { label: 'low', count: 11, color: '#FB6F84' },
   ]
   const confTotal = 165
-
-  // Calculate status distribution max for bar chart
-  const maxStatusN = Math.max(...STATUS_DIST.map((s) => s.n))
-  const totalOperators = 610
 
   return (
     <div className="page active">
@@ -121,11 +140,11 @@ export default function FunnelPage() {
               </div>
               <div style={{ flex: 1, minWidth: '160px' }}>
                 <div className="legend" style={{ flexDirection: 'column', gap: '8px' }}>
-                  {TIERS.map((t) => (
-                    <div key={t.k} className="li">
-                      <span className="sw" style={{ background: tierColorMap[t.k][0] }}></span>
-                      {t.k.replace(/_/g, ' ')}
-                      <span className="va">{t.n}</span>
+                  {tiers.map((t: any) => (
+                    <div key={t.tier} className="li">
+                      <span className="sw" style={{ background: tierColorMap[t.tier] || '#9CA9BA' }}></span>
+                      {TIER_LABELS[t.tier] || t.tier.replace(/_/g, ' ')}
+                      <span className="va">{t.count}</span>
                     </div>
                   ))}
                 </div>
@@ -144,17 +163,25 @@ export default function FunnelPage() {
                 </tr>
               </thead>
               <tbody>
-                {TIERS.map((t) => (
-                  <tr key={t.k}>
-                    <td>
-                      <Badge label={t.k} status={t.k} />
+                {tiers.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} style={{ padding: '20px', textAlign: 'center', color: 'var(--text-dim)' }}>
+                      Loading...
                     </td>
-                    <td className="cell-mono cell-strong">{t.n}</td>
-                    <td className="cell-mono cell-dim">{t.p}</td>
-                    <td className="cell-mono">{t.sc}</td>
-                    <td className="cell-mono">{t.sync}</td>
                   </tr>
-                ))}
+                ) : (
+                  tiers.map((t: any) => (
+                    <tr key={t.tier}>
+                      <td>
+                        <Badge label={TIER_LABELS[t.tier] || t.tier.replace(/_/g, ' ')} statusKey={t.tier} />
+                      </td>
+                      <td className="cell-mono cell-strong">{t.count}</td>
+                      <td className="cell-mono cell-dim">{t.percentage}%</td>
+                      <td className="cell-mono">{t.avg_score}</td>
+                      <td className="cell-mono">{t.sync_rate}%</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -169,14 +196,14 @@ export default function FunnelPage() {
             <div className="card-meta">qualify ≥ 55</div>
           </div>
           <div className="card-body">
-            <Histogram values={HIST} qualifyThreshold={5} />
+            <Histogram values={scoreBins} qualifyThreshold={Math.floor(qualifyThreshold / 10)} />
             <div
               className="muted"
               style={{ fontSize: '12px', marginTop: '14px', textAlign: 'center' }}
             >
               ICP score · 0–100 · bins of 10 —{' '}
               <span style={{ color: 'var(--good)' }}>green</span> bins clear the
-              qualification gate
+              qualification gate (≥{qualifyThreshold})
             </div>
           </div>
         </div>
@@ -257,26 +284,26 @@ export default function FunnelPage() {
                   background: 'var(--good-bg)',
                 }}
               >
-                <div className="n mono">{REACH.yy}</div>
+                <div className="n mono">{reach.yy}</div>
                 <div className="l">email + phone</div>
                 <div className="pc mono" style={{ color: 'var(--text-mute)' }}>
-                  27% · best
+                  {reachPercentages.email_phone}% · best
                 </div>
               </div>
               <div className="mx-cell">
-                <div className="n mono">{REACH.yn}</div>
+                <div className="n mono">{reach.yn}</div>
                 <div className="l">email only</div>
                 <div className="pc mono" style={{ color: 'var(--text-mute)' }}>
-                  43%
+                  {reachPercentages.email_only}%
                 </div>
               </div>
 
               <div className="mx-axis v">Email ✗</div>
               <div className="mx-cell">
-                <div className="n mono">{REACH.ny}</div>
+                <div className="n mono">{reach.ny}</div>
                 <div className="l">phone only</div>
                 <div className="pc mono" style={{ color: 'var(--text-mute)' }}>
-                  8%
+                  {reachPercentages.phone_only}%
                 </div>
               </div>
               <div
@@ -286,18 +313,18 @@ export default function FunnelPage() {
                   background: 'var(--bad-bg)',
                 }}
               >
-                <div className="n mono">{REACH.nn}</div>
+                <div className="n mono">{reach.nn}</div>
                 <div className="l">public fallback</div>
                 <div className="pc mono" style={{ color: 'var(--text-mute)' }}>
-                  22%
+                  {reachPercentages.neither}%
                 </div>
               </div>
             </div>
             <div className="warn-box" style={{ marginTop: '18px' }}>
               <Bolt />
               <div>
-                <b>{REACH.nn} operators are public-email only.</b> Multi-channel
-                (email + phone) leads convert ~2× — prioritise the {REACH.yy} in the
+                <b>{reach.nn} operators are public-email only.</b> Multi-channel
+                (email + phone) leads convert ~2× — prioritise the {reach.yy} in the
                 top-left quadrant for the SDR agent.
               </div>
             </div>
@@ -315,28 +342,34 @@ export default function FunnelPage() {
           <div className="card-meta">{totalOperators} operators · live snapshot</div>
         </div>
         <div className="card-body">
-          {STATUS_DIST.map((s) => {
-            const [color] = statusColorMap[s.k] || ['#9CA9BA', 'rgba(156,169,186,.14)']
-            return (
-              <div key={s.k} className="bar-row">
-                <div className="lab">
-                  <Badge label={s.k} status={s.k} />
-                </div>
-                <div className="bar-track">
-                  <div
-                    className="bar-fill"
-                    style={{
-                      width: `${(s.n / maxStatusN) * 100}%`,
-                      background: color,
-                    }}
-                  >
-                    {s.n}
+          {statusDist.length === 0 ? (
+            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-dim)' }}>
+              Loading status distribution...
+            </div>
+          ) : (
+            statusDist.map((s) => {
+              const color = statusColorMap[s.k] || '#9CA9BA'
+              return (
+                <div key={s.k} className="bar-row">
+                  <div className="lab">
+                    <Badge label={s.k.replace(/_/g, ' ')} statusKey={s.k} />
                   </div>
+                  <div className="bar-track">
+                    <div
+                      className="bar-fill"
+                      style={{
+                        width: `${(s.n / maxStatusN) * 100}%`,
+                        background: color,
+                      }}
+                    >
+                      {s.n}
+                    </div>
+                  </div>
+                  <div className="pct">{((s.n / totalOperators) * 100).toFixed(1)}%</div>
                 </div>
-                <div className="pct">{((s.n / totalOperators) * 100).toFixed(1)}%</div>
-              </div>
-            )
-          })}
+              )
+            })
+          )}
         </div>
       </div>
 
