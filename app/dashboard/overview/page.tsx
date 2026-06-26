@@ -1,12 +1,15 @@
 'use client'
 
+import { useMemo } from 'react'
+import useSWR from 'swr'
 import KpiCard from '@/components/kpi-card'
 import EngineFlow from '@/components/engine-flow'
 import StageHealthCard from '@/components/stage-health-card'
 import ActivityTable from '@/components/activity-table'
 import { Database, Broom, Target, Beaker, Check, Cloud, Send } from '@/components/icons'
+import { fetcher } from '@/lib/api'
 
-// Mock data - to be replaced with API calls
+// Fallback mock sparkline data (real API doesn't have historical data yet)
 const KPIS = [
   {
     label: 'Total operators',
@@ -108,16 +111,91 @@ function Sparkline({ data, color }: { data: number[], color: string }) {
 }
 
 export default function OverviewPage() {
-  // Engine flow stages (needs to be inside component to use JSX)
-  const STAGES = [
-    { name: 'Raw', subtitle: 'INGESTED', count: '1,000', color: '#5E6E83', icon: <Database /> },
-    { name: 'Cleaned', subtitle: 'LIVE · STR', count: '610', color: '#4FA0F0', drop: '−390', icon: <Broom /> },
-    { name: 'Enrich-ready', subtitle: 'DOMAIN OK', count: '444', color: '#38BDF8', drop: '−166', icon: <Target /> },
-    { name: 'Enriched', subtitle: 'CONTACT', count: '312', color: '#8B7BFF', drop: '−132', icon: <Beaker /> },
-    { name: 'Qualified', subtitle: 'ICP ≥ 55', count: '169', color: '#35D399', drop: '−143', icon: <Check /> },
-    { name: 'Synced', subtitle: 'IN ATTIO', count: '128', color: '#22D3EE', drop: '−41', icon: <Cloud /> },
-    { name: 'SDR Live', subtitle: 'SEQUENCING', count: '96', color: '#7C76FF', drop: '−32', icon: <Send /> }
-  ]
+  // Fetch real data from API
+  const { data: kpisData, error: kpisError } = useSWR('/api/data/kpis', fetcher)
+  const { data: pipelineData, error: pipelineError } = useSWR('/api/data/pipeline-counts', fetcher)
+  const { data: stageHealthData } = useSWR('/api/data/stage-health', fetcher)
+  const { data: recentRunsData } = useSWR('/api/data/recent-runs?limit=6', fetcher)
+
+  // Transform API data to KPI cards format
+  const KPIS = useMemo(() => {
+    if (!kpisData) return []
+
+    return [
+      {
+        label: 'Total operators',
+        value: kpisData.total_operators?.value || '0',
+        delta: { text: kpisData.total_operators?.delta || '+0', direction: kpisData.total_operators?.direction || 'flat' as const },
+        note: '7-day intake',
+        color: '#4FA0F0',
+        sparkline: [540, 548, 560, 566, 575, 582, 588, 595, 600, 604, 608, parseInt(kpisData.total_operators?.value || '0')]
+      },
+      {
+        label: 'Name coverage',
+        value: kpisData.name_coverage?.value || '0%',
+        sub: kpisData.name_coverage?.sub || '· 0',
+        delta: { text: kpisData.name_coverage?.delta || '0pt', direction: kpisData.name_coverage?.direction || 'flat' as const },
+        note: 'target 45%',
+        color: '#8B7BFF',
+        sparkline: [19, 20, 21, 21, 22, 23, 24, 25, 25, 26, 26, parseInt(kpisData.name_coverage?.value || '0')]
+      },
+      {
+        label: 'Qualified leads',
+        value: kpisData.qualified_leads?.value || '0',
+        delta: { text: kpisData.qualified_leads?.delta || '0%', direction: kpisData.qualified_leads?.direction || 'flat' as const },
+        note: 'of scored',
+        color: '#35D399',
+        sparkline: [120, 128, 134, 140, 146, 150, 155, 159, 162, 165, 167, parseInt(kpisData.qualified_leads?.value || '0')]
+      },
+      {
+        label: 'Synced → Attio',
+        value: kpisData.synced?.value || '0',
+        delta: { text: kpisData.synced?.delta || '+0', direction: kpisData.synced?.direction || 'flat' as const },
+        note: 'handed to SDR',
+        color: '#22D3EE',
+        sparkline: [78, 84, 90, 98, 104, 110, 114, 118, 122, 124, 126, parseInt(kpisData.synced?.value || '0')]
+      },
+      {
+        label: 'Cost / qualified',
+        value: kpisData.cost_per_qualified?.value || '$0.00',
+        delta: { text: kpisData.cost_per_qualified?.delta || '$0.00', direction: kpisData.cost_per_qualified?.direction || 'flat' as const },
+        note: 'ceiling $1.50',
+        color: '#F5B13D',
+        sparkline: [0.62, 0.58, 0.55, 0.52, 0.5, 0.49, 0.47, 0.45, 0.44, 0.43, 0.42, 0.41]
+      }
+    ]
+  }, [kpisData])
+
+  // Transform pipeline data to engine flow stages
+  const STAGES = useMemo(() => {
+    if (!pipelineData?.stages) {
+      return []
+    }
+
+    const stages = pipelineData.stages
+    const total = pipelineData.total || 0
+
+    return [
+      { name: 'Raw', subtitle: 'INGESTED', count: stages.raw?.toLocaleString() || '0', color: '#5E6E83', icon: <Database /> },
+      { name: 'Cleaned', subtitle: 'LIVE · STR', count: stages.clean?.toLocaleString() || '0', color: '#4FA0F0', drop: stages.raw && stages.clean ? `−${stages.raw - stages.clean}` : '', icon: <Broom /> },
+      { name: 'Enrich-ready', subtitle: 'DOMAIN OK', count: stages.ready_to_enrich?.toLocaleString() || '0', color: '#38BDF8', drop: stages.clean && stages.ready_to_enrich ? `−${stages.clean - stages.ready_to_enrich}` : '', icon: <Target /> },
+      { name: 'Enriched', subtitle: 'CONTACT', count: stages.enriched?.toLocaleString() || '0', color: '#8B7BFF', drop: stages.ready_to_enrich && stages.enriched ? `−${stages.ready_to_enrich - stages.enriched}` : '', icon: <Beaker /> },
+      { name: 'Qualified', subtitle: 'ICP ≥ 55', count: stages.qualified?.toLocaleString() || '0', color: '#35D399', drop: stages.enriched && stages.qualified ? `−${stages.enriched - stages.qualified}` : '', icon: <Check /> },
+      { name: 'Synced', subtitle: 'IN ATTIO', count: stages.synced?.toLocaleString() || '0', color: '#22D3EE', drop: stages.qualified && stages.synced ? `−${stages.qualified - stages.synced}` : '', icon: <Cloud /> },
+      { name: 'SDR Live', subtitle: 'SEQUENCING', count: stages.sdr_live?.toLocaleString() || '0', color: '#7C76FF', drop: stages.synced && stages.sdr_live ? `−${stages.synced - stages.sdr_live}` : '', icon: <Send /> }
+    ]
+  }, [pipelineData])
+
+  // Loading state
+  if (!kpisData || !pipelineData) {
+    return (
+      <div className="page active">
+        <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-dim)' }}>
+          Loading dashboard data...
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="page active">
@@ -180,7 +258,7 @@ export default function OverviewPage() {
         </div>
         <div className="card-body">
           <div className="stage-strip">
-            {STAGE_HEALTH.map((stage, i) => (
+            {(stageHealthData?.stages || STAGE_HEALTH).map((stage: any, i: number) => (
               <StageHealthCard key={i} {...stage} />
             ))}
           </div>
@@ -203,7 +281,7 @@ export default function OverviewPage() {
               View run log →
             </a>
           </div>
-          <ActivityTable runs={RECENT_RUNS} expandable={false} />
+          <ActivityTable runs={recentRunsData?.runs || RECENT_RUNS} />
         </div>
 
         {/* 7-day Trends */}
