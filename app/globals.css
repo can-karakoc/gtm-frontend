@@ -100,7 +100,7 @@ input,select{font-family:inherit}
 .sidebar{
   width:var(--sidebar-w);flex:0 0 var(--sidebar-w);
   position:sticky;top:0;height:100vh;
-  background:linear-gradient(180deg, rgba(12,17,23,0.6), var(--bg));
+  background:var(--bg);
   border-right:1px solid var(--border-soft);
   display:flex;flex-direction:column;padding:18px 14px;z-index:30;
 }
@@ -195,7 +195,7 @@ input,select{font-family:inherit}
 
 /* ---------- cards & grid ---------- */
 .grid{display:grid;gap:16px}
-.card{background:linear-gradient(180deg,var(--surface),var(--bg-raised));border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-1);min-width:0}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-1);min-width:0}
 .card.pad{padding:18px}
 .card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid var(--border-soft)}
 .card-title{font-weight:700;font-size:14px;letter-spacing:-.01em;display:flex;align-items:center;gap:9px}
@@ -205,7 +205,7 @@ input,select{font-family:inherit}
 
 /* ---------- KPI cards ---------- */
 .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
-.kpi{position:relative;background:linear-gradient(180deg,var(--surface),var(--bg-raised));border:1px solid var(--border);border-radius:var(--r-md);padding:15px 16px 14px;overflow:hidden;transition:border-color var(--fast),transform var(--fast)}
+.kpi{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:15px 16px 14px;overflow:hidden;transition:border-color var(--fast),transform var(--fast)}
 .kpi:hover{border-color:var(--border-strong);transform:translateY(-2px)}
 .kpi::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent-color,var(--brand));opacity:.85}
 .kpi-top{display:flex;align-items:center;justify-content:space-between}
@@ -291,7 +291,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:13px}
 
 /* ---------- stage health strip ---------- */
 .stage-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
-.shealth{background:linear-gradient(180deg,var(--surface),var(--bg-raised));border:1px solid var(--border);border-radius:var(--r-md);padding:13px 14px;transition:all var(--fast);cursor:pointer}
+.shealth{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:13px 14px;transition:all var(--fast);cursor:pointer}
 .shealth:hover{border-color:var(--border-strong);transform:translateY(-2px)}
 .shealth-top{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .shealth-top .nm{font-weight:600;font-size:12.5px}
@@ -408,7 +408,7 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:none;border-ra
 
 /* ---------- health ---------- */
 .sys-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-.sys-card{background:linear-gradient(180deg,var(--surface),var(--bg-raised));border:1px solid var(--border);border-radius:var(--r-md);padding:16px}
+.sys-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:16px}
 .sys-card .sh{display:flex;align-items:center;gap:9px;margin-bottom:10px}
 .sys-card .sh .nm{font-weight:600;font-size:12.5px}
 .sys-card .sv{font-family:var(--mono);font-size:22px;font-weight:600}
@@ -425,7 +425,7 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:none;border-ra
 .alert-time{font-family:var(--mono);font-size:10.5px;color:var(--text-faint);white-space:nowrap}
 
 .hc-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
-.hcard{background:linear-gradient(180deg,var(--surface),var(--bg-raised));border:1px solid var(--border);border-radius:var(--r-md);padding:16px;border-top:2px solid var(--sc,var(--brand))}
+.hcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:16px;border-top:2px solid var(--sc,var(--brand))}
 .hcard .hh{display:flex;align-items:center;gap:8px;margin-bottom:12px}
 .hcard .hh .ic{width:16px;height:16px;color:var(--sc)}
 .hcard .hh .nm{font-weight:700;font-size:13px}
@@ -435,7 +435,7 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:none;border-ra
 /* ---------- modal ---------- */
 .overlay{position:fixed;inset:0;background:rgba(6,9,13,.72);backdrop-filter:blur(6px);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:46px 20px;overflow-y:auto}
 .overlay.open{display:flex;animation:fade .2s ease}
-.modal{background:linear-gradient(180deg,var(--surface),var(--bg-raised));border:1px solid var(--border-strong);border-radius:var(--r-xl);width:100%;max-width:860px;box-shadow:var(--shadow-pop);animation:rise .3s cubic-bezier(.2,.7,.2,1)}
+.modal{background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--r-xl);width:100%;max-width:860px;box-shadow:var(--shadow-pop);animation:rise .3s cubic-bezier(.2,.7,.2,1)}
 .modal.sm{max-width:460px}
 @keyframes rise{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
 .modal-head{display:flex;align-items:flex-start;gap:14px;padding:20px 22px;border-bottom:1px solid var(--border-soft)}
