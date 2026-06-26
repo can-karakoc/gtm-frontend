@@ -93,6 +93,8 @@ input,select{font-family:inherit}
 *::-webkit-scrollbar-thumb{background:#222d39;border-radius:99px;border:2px solid var(--bg)}
 *::-webkit-scrollbar-thumb:hover{background:#2c3a49}
 *::-webkit-scrollbar-track{background:transparent}
+*::-webkit-scrollbar-corner{background:transparent}
+*::-webkit-scrollbar-track-piece{background:transparent}
 
 /* ---------- shell ---------- */
 .app,#root{display:flex;min-height:100vh}
