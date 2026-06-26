@@ -232,28 +232,28 @@ export default function FunnelPage() {
             ) : (
               <>
                 {/* Summary stats */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '20px' }}>
-                  <div style={{ background: 'var(--surface-2)', padding: '12px', borderRadius: 'var(--r-sm)', border: '1px solid var(--border-soft)' }}>
-                    <div style={{ fontSize: '10px', color: 'var(--text-mute)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px', marginBottom: '28px' }}>
+                  <div style={{ background: 'var(--surface-2)', padding: '14px 16px', borderRadius: 'var(--r-sm)', border: '1px solid var(--border-soft)' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--text-mute)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>
                       Scored
                     </div>
-                    <div style={{ fontSize: '20px', fontFamily: 'var(--mono)', fontWeight: 600, color: 'var(--text)' }}>
+                    <div style={{ fontSize: '24px', fontFamily: 'var(--mono)', fontWeight: 600, color: 'var(--text)' }}>
                       {scoreBins.reduce((a, b) => a + b, 0)}
                     </div>
                   </div>
-                  <div style={{ background: 'var(--good-bg)', padding: '12px', borderRadius: 'var(--r-sm)', border: '1px solid rgba(53,211,153,.25)' }}>
-                    <div style={{ fontSize: '10px', color: 'var(--text-mute)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
+                  <div style={{ background: 'var(--good-bg)', padding: '14px 16px', borderRadius: 'var(--r-sm)', border: '1px solid rgba(53,211,153,.25)' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--text-mute)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>
                       Qualified (≥{qualifyThreshold})
                     </div>
-                    <div style={{ fontSize: '20px', fontFamily: 'var(--mono)', fontWeight: 600, color: 'var(--good)' }}>
+                    <div style={{ fontSize: '24px', fontFamily: 'var(--mono)', fontWeight: 600, color: 'var(--good)' }}>
                       {scoreBins.slice(Math.floor(qualifyThreshold / 10)).reduce((a, b) => a + b, 0)}
                     </div>
                   </div>
-                  <div style={{ background: 'var(--surface-2)', padding: '12px', borderRadius: 'var(--r-sm)', border: '1px solid var(--border-soft)' }}>
-                    <div style={{ fontSize: '10px', color: 'var(--text-mute)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
+                  <div style={{ background: 'var(--surface-2)', padding: '14px 16px', borderRadius: 'var(--r-sm)', border: '1px solid var(--border-soft)' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--text-mute)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>
                       Below threshold
                     </div>
-                    <div style={{ fontSize: '20px', fontFamily: 'var(--mono)', fontWeight: 600, color: 'var(--text-dim)' }}>
+                    <div style={{ fontSize: '24px', fontFamily: 'var(--mono)', fontWeight: 600, color: 'var(--text-dim)' }}>
                       {scoreBins.slice(0, Math.floor(qualifyThreshold / 10)).reduce((a, b) => a + b, 0)}
                     </div>
                   </div>
@@ -290,13 +290,13 @@ export default function FunnelPage() {
                   })}
                 </div>
 
-                <div style={{ marginTop: '16px', padding: '10px 12px', background: 'var(--surface-2)', borderRadius: 'var(--r-sm)', fontSize: '11px', color: 'var(--text-mute)', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'var(--good)' }}></div>
+                <div style={{ marginTop: '24px', padding: '12px 14px', background: 'var(--surface-2)', borderRadius: 'var(--r-sm)', fontSize: '11px', color: 'var(--text-mute)', display: 'flex', alignItems: 'center', gap: '20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ width: '14px', height: '14px', borderRadius: '3px', background: 'var(--good)' }}></div>
                     <span>Qualified (≥{qualifyThreshold})</span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'var(--enrich)' }}></div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ width: '14px', height: '14px', borderRadius: '3px', background: 'var(--enrich)' }}></div>
                     <span>Below threshold</span>
                   </div>
                 </div>
@@ -706,40 +706,40 @@ export default function FunnelPage() {
         .score-dist {
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 12px;
         }
 
         .score-row {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 12px;
         }
 
         .score-label {
           font-family: var(--mono);
-          font-size: 11px;
+          font-size: 12px;
           color: var(--text-dim);
-          width: 60px;
+          width: 70px;
           text-align: right;
           flex-shrink: 0;
         }
 
         .score-bar-track {
           flex: 1;
-          height: 24px;
+          height: 32px;
           background: var(--surface-3);
-          border-radius: var(--r-xs);
+          border-radius: var(--r-sm);
           position: relative;
           overflow: hidden;
         }
 
         .score-bar-fill {
           height: 100%;
-          border-radius: var(--r-xs);
+          border-radius: var(--r-sm);
           display: flex;
           align-items: center;
           justify-content: flex-end;
-          padding-right: 10px;
+          padding-right: 12px;
           transition: width 0.6s cubic-bezier(0.2, 0.7, 0.2, 1), filter 0.15s;
         }
 
@@ -749,16 +749,16 @@ export default function FunnelPage() {
 
         .score-count {
           font-family: var(--mono);
-          font-size: 11px;
+          font-size: 13px;
           font-weight: 600;
           color: #0b0f14;
         }
 
         .score-pct {
           font-family: var(--mono);
-          font-size: 11px;
+          font-size: 12px;
           color: var(--text-mute);
-          width: 40px;
+          width: 45px;
           text-align: right;
           flex-shrink: 0;
         }
