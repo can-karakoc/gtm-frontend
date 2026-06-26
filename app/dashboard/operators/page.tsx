@@ -144,6 +144,19 @@ const OPERATORS = [
 
 const NAME_SOURCES = ['website', 'email_name', 'snov', 'leadmagic', 'clay']
 
+// Custom labels for enrichment tiers
+const TIER_LABELS: Record<string, string> = {
+  'publicly_reachable_only': 'only public info',
+  'pre_enriched': 'pre enriched',
+  'clay_enriched': 'clay enriched',
+  'name_missing': 'name missing',
+  'no_data': 'no data',
+  'no_public_contact': 'no public contact',
+  'clay_no_data': 'clay no data',
+  'name_found': 'name found',
+  'skipped_pms_host': 'skipped pms host',
+}
+
 export default function OperatorsPage() {
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
   const [selectedTiers, setSelectedTiers] = useState<string[]>([])
@@ -284,7 +297,7 @@ export default function OperatorsPage() {
                     setCurrentPage(0)
                   }}
                 />
-                <Badge label={tier.replace(/_/g, ' ')} statusKey={tier} />
+                <Badge label={TIER_LABELS[tier] || tier.replace(/_/g, ' ')} statusKey={tier} />
                 <span className="ct">{count}</span>
               </label>
             ))}
