@@ -142,7 +142,6 @@ const OPERATORS = [
   },
 ]
 
-const TIER_FILTERS = ['pre_enriched', 'clay_enriched', 'clay_phone', 'clay_linkedin', 'clay_no_data']
 const NAME_SOURCES = ['website', 'email_name', 'snov', 'leadmagic', 'clay']
 
 export default function OperatorsPage() {
@@ -156,6 +155,11 @@ export default function OperatorsPage() {
   // Fetch status counts first to populate filters
   const { data: statusCounts } = useSWR('/api/data/status-counts', fetcher)
   const { data: tierCounts } = useSWR('/api/data/enrichment-tier-counts', fetcher)
+
+  // Convert tier counts to array for rendering (already sorted by count from API)
+  const tierList = tierCounts
+    ? Object.entries(tierCounts)
+    : []
 
   // Build query params
   const queryParams = new URLSearchParams({
@@ -266,7 +270,7 @@ export default function OperatorsPage() {
           {/* Enrichment Tier Filters */}
           <div className="fr-group">
             <div className="fr-title">Enrichment tier</div>
-            {TIER_FILTERS.map(tier => (
+            {tierList.map(([tier, count]) => (
               <label key={tier} className="chk">
                 <input
                   type="checkbox"
@@ -281,7 +285,7 @@ export default function OperatorsPage() {
                   }}
                 />
                 <Badge label={tier.replace(/_/g, ' ')} statusKey={tier} />
-                <span className="ct">{tierCounts?.[tier] || 0}</span>
+                <span className="ct">{count}</span>
               </label>
             ))}
           </div>

@@ -67,12 +67,23 @@ export default function Badge({
     no_custom_domain: ['#5E6E83', 'rgba(94,110,131,.15)'],
     publicly_reachable_only: ['#38BDF8', 'rgba(56,189,248,.15)'],
     no_public_contact: ['#FB6F84', 'rgba(251,111,132,.15)'],
+    // Enrichment tiers
     pre_enriched: ['#35D399', 'rgba(53,211,153,.18)'],    // 💰 Found name pre-Clay (saved credits!) - green
     clay_enriched: ['#8B7BFF', 'rgba(139,123,255,.18)'],  // 🎨 Enriched through Clay - purple
+
+    // Enrichment statuses (no full enrichment yet)
+    name_missing: ['#F59E0B', 'rgba(245,158,11,.15)'],    // Found email but no name - orange
+    no_data: ['#5E6E83', 'rgba(94,110,131,.15)'],         // No contact info - gray
+    publicly_reachable_only: ['#38BDF8', 'rgba(56,189,248,.15)'], // Only public info - blue
+    no_public_contact: ['#FB6F84', 'rgba(251,111,132,.15)'],  // No public contact - red
+    clay_no_data: ['#FB6F84', 'rgba(251,111,132,.15)'],   // Clay returned nothing - red
+    name_found: ['#35D399', 'rgba(53,211,153,.15)'],      // Name found - green
+    skipped_pms_host: ['#5E6E83', 'rgba(94,110,131,.15)'], // Skipped PMS host - gray
+
+    // Legacy
     clay_email: ['#22D3EE', 'rgba(34,211,238,.15)'],
     clay_phone: ['#F5B13D', 'rgba(245,177,61,.15)'],
     clay_linkedin: ['#4FA0F0', 'rgba(79,160,240,.15)'],
-    clay_no_data: ['#FB6F84', 'rgba(251,111,132,.15)'],
   };
 
   // Get colors from status or use custom colors or fallback to default
