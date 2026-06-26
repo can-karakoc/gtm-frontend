@@ -1,10 +1,12 @@
 'use client'
 
 import { useState } from 'react'
+import useSWR from 'swr'
 import Badge from '@/components/badge'
 import * as Icons from '@/components/icons'
+import { fetcher } from '@/lib/api'
 
-// Mock operator data
+// Keep mock data as fallback
 const OPERATORS = [
   {
     id: 'op_4471',
@@ -155,8 +157,21 @@ const TIER_FILTERS = ['clay_full', 'clay_email', 'clay_phone', 'clay_linkedin', 
 const NAME_SOURCES = ['website', 'email_name', 'snov', 'leadmagic', 'clay']
 
 export default function OperatorsPage() {
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>(['synced', 'qualified', 'enriched'])
-  const [scoreThreshold, setScoreThreshold] = useState(55)
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
+  const [scoreThreshold, setScoreThreshold] = useState(0)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [currentPage, setCurrentPage] = useState(0)
+  const limit = 50
+
+  // Fetch operators from API
+  const { data, error, isLoading } = useSWR(
+    `/api/data/operators?limit=${limit}&offset=${currentPage * limit}${searchQuery ? `&search=${searchQuery}` : ''}`,
+    fetcher,
+    { refreshInterval: 30000 } // Auto-refresh every 30 seconds
+  )
+
+  const operators = data?.operators || OPERATORS
+  const total = data?.total || OPERATORS.length
 
   const getScoreColor = (score: number, band: string | null) => {
     if (score >= 70) return '#35D399'
@@ -284,10 +299,23 @@ export default function OperatorsPage() {
           <div className="card-head">
             <div className="search" style={{ margin: 0, maxWidth: '340px', flex: 1 }}>
               <Icons.Search />
-              <input placeholder="Domain, company, email, contact…" />
+              <input
+                placeholder="Domain, company, email, contact…"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value)
+                  setCurrentPage(0) // Reset to first page on search
+                }}
+              />
             </div>
             <div className="card-meta">
-              Showing <b style={{ color: 'var(--text)' }}>12</b> of 610
+              {isLoading ? (
+                'Loading...'
+              ) : (
+                <>
+                  Showing <b style={{ color: 'var(--text)' }}>{operators.length}</b> of {total}
+                </>
+              )}
             </div>
           </div>
 
@@ -307,49 +335,62 @@ export default function OperatorsPage() {
                 </tr>
               </thead>
               <tbody>
-                {OPERATORS.map(op => (
-                  <tr key={op.id} className="clickable">
-                    <td>
-                      <div className="dom">{op.dom}</div>
-                      <div className="mono" style={{ fontSize: '10px', color: 'var(--text-faint)' }}>
-                        {op.id}
-                      </div>
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={7} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-dim)' }}>
+                      Loading operators...
                     </td>
-                    <td className="cell-strong">{op.co}</td>
-                    <td>
-                      {op.ct ? (
-                        <span style={{ fontSize: '12.5px' }}>{op.ct}</span>
-                      ) : (
-                        <span className="cell-dim mono">—</span>
-                      )}
+                  </tr>
+                ) : operators.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-dim)' }}>
+                      No operators found
                     </td>
-                    <td>
-                      <Badge label={op.status.replace(/_/g, ' ')} statusKey={op.status} />
-                    </td>
-                    <td>
-                      {op.tier ? (
-                        <Badge label={op.tier.replace(/_/g, ' ')} statusKey={op.tier} />
-                      ) : (
-                        <span className="cell-dim mono" style={{ fontSize: '11px' }}>—</span>
-                      )}
-                    </td>
-                    <td style={{ width: '54px' }}>
-                      {op.sc > 0 ? (
-                        <span
-                          className="score-chip"
-                          style={{
-                            background: getScoreBgColor(op.band),
-                            color: getScoreColor(op.sc, op.band),
-                          }}
-                        >
-                          {op.sc}
-                        </span>
-                      ) : (
-                        <span className="cell-dim">—</span>
-                      )}
-                    </td>
-                    <td style={{ width: '50px', textAlign: 'center' }}>
-                      {op.synced ? (
+                  </tr>
+                ) : (
+                  operators.map((op: any) => (
+                    <tr key={op.id} className="clickable">
+                      <td>
+                        <div className="dom">{op.domain || op.dom}</div>
+                        <div className="mono" style={{ fontSize: '10px', color: 'var(--text-faint)' }}>
+                          {op.id}
+                        </div>
+                      </td>
+                      <td className="cell-strong">{op.company_name || op.co}</td>
+                      <td>
+                        {op.contact_name || op.ct ? (
+                          <span style={{ fontSize: '12.5px' }}>{op.contact_name || op.ct}</span>
+                        ) : (
+                          <span className="cell-dim mono">—</span>
+                        )}
+                      </td>
+                      <td>
+                        <Badge label={(op.status || 'raw').replace(/_/g, ' ')} statusKey={op.status || 'raw'} />
+                      </td>
+                      <td>
+                        {op.tier ? (
+                          <Badge label={op.tier.replace(/_/g, ' ')} statusKey={op.tier} />
+                        ) : (
+                          <span className="cell-dim mono" style={{ fontSize: '11px' }}>—</span>
+                        )}
+                      </td>
+                      <td style={{ width: '54px' }}>
+                        {op.icp_score && op.icp_score > 0 ? (
+                          <span
+                            className="score-chip"
+                            style={{
+                              background: getScoreBgColor(op.score_band || null),
+                              color: getScoreColor(op.icp_score, op.score_band || null),
+                            }}
+                          >
+                            {op.icp_score}
+                          </span>
+                        ) : (
+                          <span className="cell-dim">—</span>
+                        )}
+                      </td>
+                      <td style={{ width: '50px', textAlign: 'center' }}>
+                        {op.attio_list_entry_id || op.synced ? (
                         <span style={{ color: 'var(--synced)' }}>
                           <Icons.Check />
                         </span>
@@ -358,9 +399,40 @@ export default function OperatorsPage() {
                       )}
                     </td>
                   </tr>
-                ))}
+                )))}
               </tbody>
             </table>
+
+            {/* Pagination */}
+            {!isLoading && total > limit && (
+              <div style={{
+                padding: '16px 20px',
+                borderTop: '1px solid var(--border-soft)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-dim)' }}>
+                  Showing {currentPage * limit + 1} - {Math.min((currentPage + 1) * limit, total)} of {total} operators
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    className="btn sm ghost"
+                    disabled={currentPage === 0}
+                    onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
+                  >
+                    Previous
+                  </button>
+                  <button
+                    className="btn sm ghost"
+                    disabled={(currentPage + 1) * limit >= total}
+                    onClick={() => setCurrentPage(p => p + 1)}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
