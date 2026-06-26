@@ -259,16 +259,18 @@ export default function OperatorsPage() {
             ))}
           </div>
 
-          {/* Enrichment Tier Filters */}
+          {/* Enrichment Tier Filters - TODO: Wire up when enrichment tiers are computed */}
+          {/*
           <div className="fr-group">
             <div className="fr-title">Enrichment tier</div>
             {TIER_FILTERS.map(tier => (
               <label key={tier} className="chk">
-                <input type="checkbox" />
+                <input type="checkbox" disabled />
                 <Badge label={tier.replace(/_/g, ' ')} statusKey={tier} />
               </label>
             ))}
           </div>
+          */}
 
           {/* Score Range */}
           <div className="fr-group">
@@ -290,28 +292,32 @@ export default function OperatorsPage() {
             </div>
           </div>
 
-          {/* Name Source */}
+          {/* Name Source - TODO: Wire up when contact_name source tracking is added */}
+          {/*
           <div className="fr-group">
             <div className="fr-title">Name source</div>
             {NAME_SOURCES.map(source => (
               <label key={source} className="chk">
-                <input type="checkbox" />
+                <input type="checkbox" disabled />
                 <span style={{ fontSize: '12.5px' }}>{source}</span>
               </label>
             ))}
           </div>
+          */}
 
-          {/* Additional Filters */}
+          {/* Additional Filters - TODO: "Qualified" and "Synced" are status filters above */}
+          {/*
           <div className="fr-group" style={{ border: 'none' }}>
             <label className="chk">
-              <input type="checkbox" />
+              <input type="checkbox" disabled />
               Qualified only
             </label>
             <label className="chk">
-              <input type="checkbox" />
+              <input type="checkbox" disabled />
               Synced to Attio
             </label>
           </div>
+          */}
         </div>
 
         {/* Main Table */}
