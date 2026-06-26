@@ -4,6 +4,7 @@ import KpiCard from '@/components/kpi-card'
 import EngineFlow from '@/components/engine-flow'
 import StageHealthCard from '@/components/stage-health-card'
 import ActivityTable from '@/components/activity-table'
+import { Database, Broom, Target, Beaker, Check, Cloud, Send } from '@/components/icons'
 
 // Mock data - to be replaced with API calls
 const KPIS = [
@@ -48,6 +49,17 @@ const KPIS = [
     color: '#F5B13D',
     sparkline: [0.62, 0.58, 0.55, 0.52, 0.5, 0.49, 0.47, 0.45, 0.44, 0.43, 0.42, 0.41]
   }
+]
+
+// Engine flow stages
+const STAGES = [
+  { name: 'Raw', subtitle: 'INGESTED', count: '1,000', color: '#5E6E83', icon: <Database /> },
+  { name: 'Cleaned', subtitle: 'LIVE · STR', count: '610', color: '#4FA0F0', drop: '−390', icon: <Broom /> },
+  { name: 'Enrich-ready', subtitle: 'DOMAIN OK', count: '444', color: '#38BDF8', drop: '−166', icon: <Target /> },
+  { name: 'Enriched', subtitle: 'CONTACT', count: '312', color: '#8B7BFF', drop: '−132', icon: <Beaker /> },
+  { name: 'Qualified', subtitle: 'ICP ≥ 55', count: '169', color: '#35D399', drop: '−143', icon: <Check /> },
+  { name: 'Synced', subtitle: 'IN ATTIO', count: '128', color: '#22D3EE', drop: '−41', icon: <Cloud /> },
+  { name: 'SDR Live', subtitle: 'SEQUENCING', count: '96', color: '#7C76FF', drop: '−32', icon: <Send /> }
 ]
 
 const STAGE_HEALTH = [
@@ -136,13 +148,23 @@ export default function OverviewPage() {
       {/* KPI Cards */}
       <div className="kpis">
         {KPIS.map((kpi, i) => (
-          <KpiCard key={i} {...kpi} />
+          <KpiCard
+            key={i}
+            label={kpi.label}
+            value={kpi.value}
+            valueSuffix={kpi.sub}
+            delta={kpi.delta}
+            note={kpi.note}
+            accentColor={kpi.color}
+            icon={<Database />}
+            sparklineData={kpi.sparkline}
+          />
         ))}
       </div>
 
       {/* Engine Flow */}
       <div style={{ marginTop: '16px' }}>
-        <EngineFlow />
+        <EngineFlow stages={STAGES} />
       </div>
 
       {/* Pipeline Stages */}

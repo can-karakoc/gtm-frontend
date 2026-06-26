@@ -192,43 +192,43 @@ export default function Icon({ name, className, style }: IconProps) {
   )
 }
 
-// Individual icon exports for convenience
-export const Grid = Icons.grid
-export const Funnel = Icons.funnel
-export const Pulse = Icons.pulse
-export const Logs = Icons.logs
-export const People = Icons.people
-export const Upload = Icons.upload
-export const Sliders = Icons.sliders
-export const Swatch = Icons.swatch
-export const Search = Icons.search
-export const Bell = Icons.bell
-export const Database = Icons.database
-export const Broom = Icons.broom
-export const Target = Icons.target
-export const Beaker = Icons.beaker
-export const Check = Icons.check
-export const Cloud = Icons.cloud
-export const Send = Icons.send
-export const User = Icons.user
-export const Dollar = Icons.dollar
-export const Sparkles = Icons.sparkles
-export const Gauge = Icons.gauge
-export const Download = Icons.download
-export const Play = Icons.play
-export const Bolt = Icons.bolt
-export const Info = Icons.info
-export const Warn = Icons.warn
-export const X = Icons.x
-export const Chev = Icons.chev
+// Individual icon exports as components
+export const Grid = () => Icons.grid
+export const Funnel = () => Icons.funnel
+export const Pulse = () => Icons.pulse
+export const Logs = () => Icons.logs
+export const People = () => Icons.people
+export const Upload = () => Icons.upload
+export const Sliders = () => Icons.sliders
+export const Swatch = () => Icons.swatch
+export const Search = () => Icons.search
+export const Bell = () => Icons.bell
+export const Database = () => Icons.database
+export const Broom = () => Icons.broom
+export const Target = () => Icons.target
+export const Beaker = () => Icons.beaker
+export const Check = () => Icons.check
+export const Cloud = () => Icons.cloud
+export const Send = () => Icons.send
+export const User = () => Icons.user
+export const Dollar = () => Icons.dollar
+export const Sparkles = () => Icons.sparkles
+export const Gauge = () => Icons.gauge
+export const Download = () => Icons.download
+export const Play = () => Icons.play
+export const Bolt = () => Icons.bolt
+export const Info = () => Icons.info
+export const Warn = () => Icons.warn
+export const X = () => Icons.x
+export const Chev = () => Icons.chev
 
 // Aliases for lucide-react compatibility
-export const Zap = Icons.bolt
-export const Clock = Icons.clock
-export const Shield = Icons.shield
+export const Zap = () => Icons.bolt
+export const Clock = () => Icons.clock
+export const Shield = () => Icons.shield
 
 // More aliases
-export const AlertTriangle = Icons.warn
-export const FileText = Icons.logs
-export const Filter = Icons.filter
-export const Plus = Icons.plus
+export const AlertTriangle = () => Icons.warn
+export const FileText = () => Icons.logs
+export const Filter = () => Icons.filter
+export const Plus = () => Icons.plus
