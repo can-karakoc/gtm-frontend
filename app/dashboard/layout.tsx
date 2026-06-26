@@ -90,8 +90,6 @@ const NAV = [
   { p: 'operators', ic: Icons.people, t: 'Operators', badge: '610' },
   { p: 'ingest', ic: Icons.upload, t: 'Ingest' },
   { p: 'config', ic: Icons.sliders, t: 'Configuration' },
-  { sec: 'System' },
-  { p: 'design', ic: Icons.swatch, t: 'Design System' },
 ];
 
 const BREADCRUMB_MAP: Record<string, string> = {
