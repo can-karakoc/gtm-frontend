@@ -231,59 +231,77 @@ export default function FunnelPage() {
               </div>
             ) : (
               <>
-                <div className="hist" style={{ display: 'flex', alignItems: 'flex-end', gap: '5px', height: '160px', paddingTop: '10px', position: 'relative' }}>
-                  {scoreBins.map((value, index) => {
+                {/* Summary stats */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '20px' }}>
+                  <div style={{ background: 'var(--surface-2)', padding: '12px', borderRadius: 'var(--r-sm)', border: '1px solid var(--border-soft)' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--text-mute)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
+                      Scored
+                    </div>
+                    <div style={{ fontSize: '20px', fontFamily: 'var(--mono)', fontWeight: 600, color: 'var(--text)' }}>
+                      {scoreBins.reduce((a, b) => a + b, 0)}
+                    </div>
+                  </div>
+                  <div style={{ background: 'var(--good-bg)', padding: '12px', borderRadius: 'var(--r-sm)', border: '1px solid rgba(53,211,153,.25)' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--text-mute)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
+                      Qualified (≥{qualifyThreshold})
+                    </div>
+                    <div style={{ fontSize: '20px', fontFamily: 'var(--mono)', fontWeight: 600, color: 'var(--good)' }}>
+                      {scoreBins.slice(Math.floor(qualifyThreshold / 10)).reduce((a, b) => a + b, 0)}
+                    </div>
+                  </div>
+                  <div style={{ background: 'var(--surface-2)', padding: '12px', borderRadius: 'var(--r-sm)', border: '1px solid var(--border-soft)' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--text-mute)', fontFamily: 'var(--mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
+                      Below threshold
+                    </div>
+                    <div style={{ fontSize: '20px', fontFamily: 'var(--mono)', fontWeight: 600, color: 'var(--text-dim)' }}>
+                      {scoreBins.slice(0, Math.floor(qualifyThreshold / 10)).reduce((a, b) => a + b, 0)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Horizontal bar chart */}
+                <div className="score-dist">
+                  {['0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70-79', '80-89', '90-100'].map((label, index) => {
+                    const value = scoreBins[index]
+                    const total = scoreBins.reduce((a, b) => a + b, 0)
                     const maxValue = Math.max(...scoreBins)
-                    const qualifyIndex = Math.floor(qualifyThreshold / 10)
+                    const isQualified = index >= Math.floor(qualifyThreshold / 10)
+                    const percentage = total > 0 ? ((value / total) * 100).toFixed(0) : 0
+
                     return (
-                      <div
-                        key={index}
-                        className={`hbar ${index >= qualifyIndex ? 'q' : ''}`}
-                        style={{
-                          flex: 1,
-                          height: maxValue > 0 ? `${(value / maxValue) * 100}%` : '3px',
-                          borderRadius: '5px 5px 0 0',
-                          position: 'relative',
-                          minHeight: '3px',
-                          background: index >= qualifyIndex
-                            ? 'linear-gradient(180deg, var(--good), color-mix(in srgb, var(--good) 40%, #0c1219))'
-                            : 'linear-gradient(180deg, var(--enrich), color-mix(in srgb, var(--enrich) 40%, #0c1219))'
-                        }}
-                      >
-                        {value > 0 && (
-                          <span style={{
-                            position: 'absolute',
-                            top: '-19px',
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            fontFamily: 'var(--mono)',
-                            fontSize: '10px',
-                            color: 'var(--text-dim)'
-                          }}>
-                            {value}
-                          </span>
-                        )}
+                      <div key={index} className="score-row">
+                        <div className="score-label">{label}</div>
+                        <div className="score-bar-track">
+                          {value > 0 && (
+                            <div
+                              className="score-bar-fill"
+                              style={{
+                                width: `${(value / maxValue) * 100}%`,
+                                background: isQualified ? 'var(--good)' : 'var(--enrich)',
+                              }}
+                            >
+                              <span className="score-count">{value}</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="score-pct">{percentage}%</div>
                       </div>
                     )
                   })}
                 </div>
-                <div style={{ display: 'flex', gap: '5px', marginTop: '7px' }}>
-                  {['0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70-79', '80-89', '90-100'].map((label, index) => (
-                    <span key={index} style={{ flex: 1, textAlign: 'center', fontFamily: 'var(--mono)', fontSize: '9px', color: 'var(--text-faint)' }}>
-                      {label}
-                    </span>
-                  ))}
+
+                <div style={{ marginTop: '16px', padding: '10px 12px', background: 'var(--surface-2)', borderRadius: 'var(--r-sm)', fontSize: '11px', color: 'var(--text-mute)', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'var(--good)' }}></div>
+                    <span>Qualified (≥{qualifyThreshold})</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'var(--enrich)' }}></div>
+                    <span>Below threshold</span>
+                  </div>
                 </div>
               </>
             )}
-            <div
-              className="muted"
-              style={{ fontSize: '12px', marginTop: '14px', textAlign: 'center' }}
-            >
-              ICP score · 0–100 · bins of 10 —{' '}
-              <span style={{ color: 'var(--good)' }}>green</span> bins clear the
-              qualification gate (≥{qualifyThreshold})
-            </div>
           </div>
         </div>
       </div>
@@ -683,6 +701,66 @@ export default function FunnelPage() {
           font-size: 12px;
           color: var(--text-mute);
           line-height: 1.5;
+        }
+
+        .score-dist {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .score-row {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .score-label {
+          font-family: var(--mono);
+          font-size: 11px;
+          color: var(--text-dim);
+          width: 60px;
+          text-align: right;
+          flex-shrink: 0;
+        }
+
+        .score-bar-track {
+          flex: 1;
+          height: 24px;
+          background: var(--surface-3);
+          border-radius: var(--r-xs);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .score-bar-fill {
+          height: 100%;
+          border-radius: var(--r-xs);
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          padding-right: 10px;
+          transition: width 0.6s cubic-bezier(0.2, 0.7, 0.2, 1), filter 0.15s;
+        }
+
+        .score-bar-fill:hover {
+          filter: brightness(1.15);
+        }
+
+        .score-count {
+          font-family: var(--mono);
+          font-size: 11px;
+          font-weight: 600;
+          color: #0b0f14;
+        }
+
+        .score-pct {
+          font-family: var(--mono);
+          font-size: 11px;
+          color: var(--text-mute);
+          width: 40px;
+          text-align: right;
+          flex-shrink: 0;
         }
 
         .matrix {
