@@ -220,7 +220,62 @@ export default function FunnelPage() {
             <div className="card-meta">qualify ≥ 55</div>
           </div>
           <div className="card-body">
-            <Histogram values={scoreBins} qualifyThreshold={Math.floor(qualifyThreshold / 10)} />
+            {scoreBins.length === 0 || scoreBins.every(v => v === 0) ? (
+              <div style={{ padding: '60px 20px', textAlign: 'center' }}>
+                <div style={{ fontSize: '14px', color: 'var(--text-dim)', marginBottom: '8px' }}>
+                  No scored operators yet
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--text-mute)' }}>
+                  Operators will appear here once ICP scoring is complete
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="hist" style={{ display: 'flex', alignItems: 'flex-end', gap: '5px', height: '160px', paddingTop: '10px', position: 'relative' }}>
+                  {scoreBins.map((value, index) => {
+                    const maxValue = Math.max(...scoreBins)
+                    const qualifyIndex = Math.floor(qualifyThreshold / 10)
+                    return (
+                      <div
+                        key={index}
+                        className={`hbar ${index >= qualifyIndex ? 'q' : ''}`}
+                        style={{
+                          flex: 1,
+                          height: maxValue > 0 ? `${(value / maxValue) * 100}%` : '3px',
+                          borderRadius: '5px 5px 0 0',
+                          position: 'relative',
+                          minHeight: '3px',
+                          background: index >= qualifyIndex
+                            ? 'linear-gradient(180deg, var(--good), color-mix(in srgb, var(--good) 40%, #0c1219))'
+                            : 'linear-gradient(180deg, var(--enrich), color-mix(in srgb, var(--enrich) 40%, #0c1219))'
+                        }}
+                      >
+                        {value > 0 && (
+                          <span style={{
+                            position: 'absolute',
+                            top: '-19px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            fontFamily: 'var(--mono)',
+                            fontSize: '10px',
+                            color: 'var(--text-dim)'
+                          }}>
+                            {value}
+                          </span>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+                <div style={{ display: 'flex', gap: '5px', marginTop: '7px' }}>
+                  {['0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70-79', '80-89', '90-100'].map((label, index) => (
+                    <span key={index} style={{ flex: 1, textAlign: 'center', fontFamily: 'var(--mono)', fontSize: '9px', color: 'var(--text-faint)' }}>
+                      {label}
+                    </span>
+                  ))}
+                </div>
+              </>
+            )}
             <div
               className="muted"
               style={{ fontSize: '12px', marginTop: '14px', textAlign: 'center' }}
