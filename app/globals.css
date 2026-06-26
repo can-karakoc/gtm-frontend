@@ -493,8 +493,10 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:none;border-ra
   gap:4px;
   max-height:calc(100vh - 100px);
   overflow-y:auto;
-  padding-right:8px;
+  overflow-x:hidden;
+  padding-right:4px;
 }
+.filter-rail::-webkit-scrollbar{width:6px}
 .fr-group{padding:14px 0;border-bottom:1px solid var(--border-soft)}
 .fr-group:last-child{border-bottom:none}
 .fr-title{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-mute);margin-bottom:10px}
