@@ -238,7 +238,7 @@ export default function OperatorsPage() {
       <div className="ops-layout">
         {/* Filter Rail */}
         <div className="card pad filter-rail">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+          <div className="filter-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid var(--border-soft)' }}>
             <div className="card-title" style={{ fontSize: '13px' }}>
               <Icons.Filter />
               Filters
@@ -257,6 +257,7 @@ export default function OperatorsPage() {
             </button>
           </div>
 
+          <div className="filter-content">
           {/* Status Filters */}
           <div className="fr-group">
             <div className="fr-title">Status</div>
@@ -349,6 +350,7 @@ export default function OperatorsPage() {
             </label>
           </div>
           */}
+          </div>
         </div>
 
         {/* Main Table */}
