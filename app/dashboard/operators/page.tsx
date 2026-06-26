@@ -434,15 +434,15 @@ export default function OperatorsPage() {
                         )}
                       </td>
                       <td style={{ width: '54px' }}>
-                        {op.icp_score && op.icp_score > 0 ? (
+                        {op.score && op.score > 0 ? (
                           <span
                             className="score-chip"
                             style={{
                               background: getScoreBgColor(op.score_band || null),
-                              color: getScoreColor(op.icp_score, op.score_band || null),
+                              color: getScoreColor(op.score, op.score_band || null),
                             }}
                           >
-                            {op.icp_score}
+                            {op.score}
                           </span>
                         ) : (
                           <span className="cell-dim">—</span>
