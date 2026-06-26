@@ -99,7 +99,7 @@ input,select{font-family:inherit}
 .sidebar{
   width:var(--sidebar-w);flex:0 0 var(--sidebar-w);
   position:sticky;top:0;height:100vh;
-  background:linear-gradient(180deg,#0C1117,#0A0E13);
+  background:var(--bg);
   border-right:1px solid var(--border-soft);
   display:flex;flex-direction:column;padding:18px 14px;z-index:30;
 }

@@ -163,12 +163,24 @@ export default function OperatorsPage() {
   const [currentPage, setCurrentPage] = useState(0)
   const limit = 50
 
+  // Build query params
+  const queryParams = new URLSearchParams({
+    limit: String(limit),
+    offset: String(currentPage * limit)
+  })
+  if (searchQuery) queryParams.set('search', searchQuery)
+  if (selectedStatuses.length > 0) queryParams.set('status', selectedStatuses.join(','))
+  if (scoreThreshold > 0) queryParams.set('min_score', String(scoreThreshold))
+
   // Fetch operators from API
   const { data, error, isLoading } = useSWR(
-    `/api/data/operators?limit=${limit}&offset=${currentPage * limit}${searchQuery ? `&search=${searchQuery}` : ''}`,
+    `/api/data/operators?${queryParams.toString()}`,
     fetcher,
     { refreshInterval: 30000 } // Auto-refresh every 30 seconds
   )
+
+  // Fetch status counts
+  const { data: statusCounts } = useSWR('/api/data/status-counts', fetcher)
 
   const operators = data?.operators || OPERATORS
   const total = data?.total || OPERATORS.length
@@ -217,7 +229,17 @@ export default function OperatorsPage() {
               <Icons.Filter />
               Filters
             </div>
-            <button className="btn ghost sm">Reset</button>
+            <button
+              className="btn ghost sm"
+              onClick={() => {
+                setSelectedStatuses([])
+                setScoreThreshold(0)
+                setSearchQuery('')
+                setCurrentPage(0)
+              }}
+            >
+              Reset
+            </button>
           </div>
 
           {/* Status Filters */}
@@ -234,10 +256,11 @@ export default function OperatorsPage() {
                     } else {
                       setSelectedStatuses(selectedStatuses.filter(s => s !== status))
                     }
+                    setCurrentPage(0) // Reset to first page
                   }}
                 />
                 <Badge label={status.replace(/_/g, ' ')} statusKey={status} />
-                <span className="ct">{count}</span>
+                <span className="ct">{statusCounts?.[status] || count}</span>
               </label>
             ))}
           </div>
@@ -263,7 +286,10 @@ export default function OperatorsPage() {
                 min="0"
                 max="100"
                 value={scoreThreshold}
-                onChange={(e) => setScoreThreshold(Number(e.target.value))}
+                onChange={(e) => {
+                  setScoreThreshold(Number(e.target.value))
+                  setCurrentPage(0) // Reset to first page
+                }}
                 style={{ flex: 1 }}
               />
               <span style={{ color: 'var(--brand-bright)' }}>{scoreThreshold}+</span>
