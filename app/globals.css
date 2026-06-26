@@ -518,11 +518,13 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:none;border-ra
   overflow:hidden;
   display:flex;
   flex-direction:column;
+  padding-bottom:24px;
 }
 .ops-layout > .card:last-child .tbl-wrap{
   flex:1;
   overflow:auto;
   min-height:0;
+  padding-bottom:12px;
 }
 .fr-group{padding:14px 0;border-bottom:1px solid var(--border-soft)}
 .fr-group:last-child{border-bottom:none}
