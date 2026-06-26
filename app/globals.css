@@ -488,8 +488,7 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:none;border-ra
 .filter-rail{
   position:sticky;
   top:20px;
-  align-self:start;
-  max-height:calc(100vh - 250px);
+  max-height:70vh;
   display:flex;
   flex-direction:column;
   overflow-y:auto;
