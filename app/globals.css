@@ -238,7 +238,15 @@ input,select{font-family:inherit}
 .meter.good .meter-fill{background:linear-gradient(90deg,var(--good),#6fe6b6)}
 
 /* ---------- tables ---------- */
-.tbl-wrap{overflow-x:auto;overflow-y:visible;border-radius:0 0 var(--r-lg) var(--r-lg);min-width:0;width:100%}
+.tbl-wrap{
+  overflow-x:auto;
+  overflow-y:visible;
+  border-radius:0 0 var(--r-lg) var(--r-lg);
+  min-width:0;
+  width:100%;
+  padding:0 18px 12px 18px;
+  margin:0 -18px -12px -18px;
+}
 table.tbl{width:100%;border-collapse:collapse;font-size:13px}
 .tbl thead th{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-mute);
   text-align:left;padding:11px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg-raised);font-weight:500;white-space:nowrap}
