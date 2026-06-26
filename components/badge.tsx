@@ -67,9 +67,8 @@ export default function Badge({
     no_custom_domain: ['#5E6E83', 'rgba(94,110,131,.15)'],
     publicly_reachable_only: ['#38BDF8', 'rgba(56,189,248,.15)'],
     no_public_contact: ['#FB6F84', 'rgba(251,111,132,.15)'],
-    pre_clay: ['#35D399', 'rgba(53,211,153,.18)'],        // 💰 Found name pre-Clay (saved credits!) - green
-    needs_clay: ['#F59E0B', 'rgba(245,158,11,.18)'],      // 🎯 Needs Clay enrichment - orange
-    clay_full: ['#22D3EE', 'rgba(34,211,238,.15)'],       // Full enrichment
+    pre_enriched: ['#35D399', 'rgba(53,211,153,.18)'],    // 💰 Found name pre-Clay (saved credits!) - green
+    clay_enriched: ['#8B7BFF', 'rgba(139,123,255,.18)'],  // 🎨 Enriched through Clay - purple
     clay_email: ['#22D3EE', 'rgba(34,211,238,.15)'],
     clay_phone: ['#F5B13D', 'rgba(245,177,61,.15)'],
     clay_linkedin: ['#4FA0F0', 'rgba(79,160,240,.15)'],
