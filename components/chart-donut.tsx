@@ -94,7 +94,7 @@ export default function ChartDonut({
           }}
         />
         {(centerValue !== undefined || centerLabel) && (
-          <div className="center">
+          <div className="center" style={{ zIndex: 10 }}>
             {centerValue !== undefined && (
               <div className="big mono">{centerValue}</div>
             )}
@@ -114,9 +114,12 @@ export default function ChartDonut({
         .center {
           position: absolute;
           inset: 0;
-          display: grid;
-          place-items: center;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
           text-align: center;
+          gap: 2px;
         }
 
         .big {
@@ -131,7 +134,6 @@ export default function ChartDonut({
           text-transform: uppercase;
           letter-spacing: 0.08em;
           font-family: var(--mono);
-          margin-top: ${size > 150 ? '2px' : '1px'};
         }
 
         .mono {
