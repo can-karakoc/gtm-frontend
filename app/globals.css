@@ -69,12 +69,9 @@
 }
 
 *{box-sizing:border-box}
-html,body{margin:0;padding:0;min-height:100vh}
+html,body{margin:0;padding:0}
 body{
-  background:
-    radial-gradient(ellipse 1400px 800px at 50% -20%, rgba(124,118,255,.08), transparent),
-    var(--bg);
-  background-attachment:fixed;
+  background:var(--bg);
   color:var(--text);
   font-family:var(--ui);
   font-size:14px;
@@ -97,7 +94,13 @@ input,select{font-family:inherit}
 *::-webkit-scrollbar-track-piece{background:transparent}
 
 /* ---------- shell ---------- */
-.app,#root{display:flex;min-height:100vh}
+.app,#root{
+  display:flex;
+  min-height:100vh;
+  background:
+    radial-gradient(ellipse 1400px 800px at 50% -20%, rgba(124,118,255,.08), transparent),
+    var(--bg);
+}
 .sidebar{
   width:var(--sidebar-w);flex:0 0 var(--sidebar-w);
   position:sticky;top:0;height:100vh;
