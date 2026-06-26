@@ -147,6 +147,7 @@ const NAME_SOURCES = ['website', 'email_name', 'snov', 'leadmagic', 'clay']
 
 export default function OperatorsPage() {
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
+  const [selectedTiers, setSelectedTiers] = useState<string[]>([])
   const [scoreThreshold, setScoreThreshold] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(0)
@@ -154,6 +155,7 @@ export default function OperatorsPage() {
 
   // Fetch status counts first to populate filters
   const { data: statusCounts } = useSWR('/api/data/status-counts', fetcher)
+  const { data: tierCounts } = useSWR('/api/data/enrichment-tier-counts', fetcher)
 
   // Build query params
   const queryParams = new URLSearchParams({
@@ -162,6 +164,7 @@ export default function OperatorsPage() {
   })
   if (searchQuery) queryParams.set('search', searchQuery)
   if (selectedStatuses.length > 0) queryParams.set('status', selectedStatuses.join(','))
+  if (selectedTiers.length > 0) queryParams.set('enrichment_tier', selectedTiers.join(','))
   if (scoreThreshold > 0) queryParams.set('min_score', String(scoreThreshold))
 
   // Fetch operators from API
@@ -227,6 +230,7 @@ export default function OperatorsPage() {
               className="btn ghost sm"
               onClick={() => {
                 setSelectedStatuses([])
+                setSelectedTiers([])
                 setScoreThreshold(0)
                 setSearchQuery('')
                 setCurrentPage(0)
@@ -259,18 +263,28 @@ export default function OperatorsPage() {
             ))}
           </div>
 
-          {/* Enrichment Tier Filters - TODO: Wire up when enrichment tiers are computed */}
-          {/*
+          {/* Enrichment Tier Filters */}
           <div className="fr-group">
             <div className="fr-title">Enrichment tier</div>
             {TIER_FILTERS.map(tier => (
               <label key={tier} className="chk">
-                <input type="checkbox" disabled />
+                <input
+                  type="checkbox"
+                  checked={selectedTiers.includes(tier)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setSelectedTiers([...selectedTiers, tier])
+                    } else {
+                      setSelectedTiers(selectedTiers.filter(t => t !== tier))
+                    }
+                    setCurrentPage(0)
+                  }}
+                />
                 <Badge label={tier.replace(/_/g, ' ')} statusKey={tier} />
+                <span className="ct">{tierCounts?.[tier] || 0}</span>
               </label>
             ))}
           </div>
-          */}
 
           {/* Score Range */}
           <div className="fr-group">
