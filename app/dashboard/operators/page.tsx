@@ -142,17 +142,6 @@ const OPERATORS = [
   },
 ]
 
-const STATUS_COUNTS = [
-  ['synced', 128],
-  ['qualified', 41],
-  ['enriched', 18],
-  ['clay_sent', 24],
-  ['clay_pending', 38],
-  ['ready_to_enrich', 73],
-  ['disqualified', 96],
-  ['no_custom_domain', 52],
-]
-
 const TIER_FILTERS = ['clay_full', 'clay_email', 'clay_phone', 'clay_linkedin', 'clay_no_data']
 const NAME_SOURCES = ['website', 'email_name', 'snov', 'leadmagic', 'clay']
 
@@ -162,6 +151,9 @@ export default function OperatorsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(0)
   const limit = 50
+
+  // Fetch status counts first to populate filters
+  const { data: statusCounts } = useSWR('/api/data/status-counts', fetcher)
 
   // Build query params
   const queryParams = new URLSearchParams({
@@ -179,11 +171,13 @@ export default function OperatorsPage() {
     { refreshInterval: 30000 } // Auto-refresh every 30 seconds
   )
 
-  // Fetch status counts
-  const { data: statusCounts } = useSWR('/api/data/status-counts', fetcher)
+  const operators = data?.operators || []
+  const total = data?.total || 0
 
-  const operators = data?.operators || OPERATORS
-  const total = data?.total || OPERATORS.length
+  // Convert status counts to array for rendering
+  const statusList = statusCounts
+    ? Object.entries(statusCounts).sort((a, b) => b[1] - a[1]) // Sort by count descending
+    : []
 
   const getScoreColor = (score: number, band: string | null) => {
     if (score >= 70) return '#35D399'
@@ -245,7 +239,7 @@ export default function OperatorsPage() {
           {/* Status Filters */}
           <div className="fr-group">
             <div className="fr-title">Status</div>
-            {STATUS_COUNTS.map(([status, count], i) => (
+            {statusList.map(([status, count]) => (
               <label key={status} className="chk">
                 <input
                   type="checkbox"
@@ -260,7 +254,7 @@ export default function OperatorsPage() {
                   }}
                 />
                 <Badge label={status.replace(/_/g, ' ')} statusKey={status} />
-                <span className="ct">{statusCounts?.[status] || count}</span>
+                <span className="ct">{count}</span>
               </label>
             ))}
           </div>
