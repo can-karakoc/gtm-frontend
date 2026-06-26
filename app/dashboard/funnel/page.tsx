@@ -56,7 +56,31 @@ const statusColorMap: Record<string, string> = {
   scored: '#5FD0C0',
 }
 
+// Status descriptions
+const STATUS_INFO: Record<string, string> = {
+  'promoted': 'Active STR operators using PMS - primary targets',
+  'churned': 'Former operators with expired subscriptions - win-back opportunities',
+  'not_str': 'Not short-term rental businesses - exclude from outreach',
+  'needs_review': 'Ambiguous cases requiring manual validation',
+  'dead': 'Invalid/broken records - data quality issue',
+  'synced': 'Successfully synced to Attio CRM',
+  'qualified': 'Passed ICP scoring threshold (≥55)',
+  'disqualified': 'Below ICP threshold - low priority',
+  'enriched': 'Enrichment complete, awaiting scoring',
+  'clay_sent': 'Sent to Clay for enrichment',
+  'clay_pending': 'Pending Clay enrichment response',
+  'ready_to_enrich': 'Cleaned and ready for enrichment',
+  'no_custom_domain': 'Using PMS subdomain - cannot verify',
+  'publicly_reachable_only': 'Only public contact info available',
+  'no_public_contact': 'No public contact found',
+  'raw': 'Newly ingested, not processed',
+  'clean': 'Validated and cleaned',
+  'scored': 'ICP scored, awaiting qualification',
+}
+
 export default function FunnelPage() {
+  const [hoveredStatus, setHoveredStatus] = useState<string | null>(null)
+
   // Fetch funnel data from API
   const { data: tierData } = useSWR('/api/data/funnel/enrichment-tiers', fetcher)
   const { data: scoreData } = useSWR('/api/data/funnel/score-distribution', fetcher)
@@ -349,8 +373,14 @@ export default function FunnelPage() {
           ) : (
             statusDist.map((s) => {
               const color = statusColorMap[s.k] || '#9CA9BA'
+              const percentage = ((s.n / totalOperators) * 100).toFixed(1)
               return (
-                <div key={s.k} className="bar-row">
+                <div
+                  key={s.k}
+                  className="bar-row interactive"
+                  onMouseEnter={() => setHoveredStatus(s.k)}
+                  onMouseLeave={() => setHoveredStatus(null)}
+                >
                   <div className="lab">
                     <Badge label={s.k.replace(/_/g, ' ')} statusKey={s.k} />
                   </div>
@@ -364,8 +394,22 @@ export default function FunnelPage() {
                     >
                       {s.n}
                     </div>
+                    {hoveredStatus === s.k && STATUS_INFO[s.k] && (
+                      <div className="bar-tooltip">
+                        <div className="tooltip-title">
+                          {s.k.replace(/_/g, ' ')}
+                        </div>
+                        <div className="tooltip-stats">
+                          <span><strong>{s.n}</strong> operators</span>
+                          <span><strong>{percentage}%</strong> of total</span>
+                        </div>
+                        <div className="tooltip-desc">
+                          {STATUS_INFO[s.k]}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div className="pct">{((s.n / totalOperators) * 100).toFixed(1)}%</div>
+                  <div className="pct">{percentage}%</div>
                 </div>
               )
             })
@@ -465,6 +509,19 @@ export default function FunnelPage() {
           align-items: center;
           gap: 12px;
           padding: 7px 0;
+          transition: opacity var(--fast);
+        }
+
+        .bar-row.interactive {
+          cursor: pointer;
+        }
+
+        .bar-row.interactive:hover {
+          opacity: 1;
+        }
+
+        .bar-row.interactive:hover .bar-fill {
+          filter: brightness(1.15);
         }
 
         .bar-row .lab {
@@ -484,7 +541,7 @@ export default function FunnelPage() {
           height: 22px;
           background: var(--surface-3);
           border-radius: var(--r-xs);
-          overflow: hidden;
+          overflow: visible;
           position: relative;
         }
 
@@ -509,6 +566,75 @@ export default function FunnelPage() {
           font-size: 11px;
           color: var(--text-mute);
           flex: 0 0 48px;
+        }
+
+        .bar-tooltip {
+          position: absolute;
+          bottom: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          margin-bottom: 12px;
+          background: var(--surface);
+          border: 1px solid var(--border-strong);
+          border-radius: var(--r-sm);
+          padding: 12px 14px;
+          min-width: 280px;
+          max-width: 340px;
+          box-shadow: 0 8px 24px -8px rgba(0,0,0,.6);
+          z-index: 100;
+          animation: tooltip-in 0.15s ease;
+          pointer-events: none;
+        }
+
+        @keyframes tooltip-in {
+          from {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-4px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+          }
+        }
+
+        .bar-tooltip::after {
+          content: '';
+          position: absolute;
+          top: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          border: 6px solid transparent;
+          border-top-color: var(--border-strong);
+        }
+
+        .tooltip-title {
+          font-weight: 600;
+          font-size: 13px;
+          color: var(--text);
+          margin-bottom: 8px;
+          text-transform: capitalize;
+        }
+
+        .tooltip-stats {
+          display: flex;
+          gap: 16px;
+          font-family: var(--mono);
+          font-size: 11px;
+          color: var(--text-dim);
+          margin-bottom: 10px;
+          padding-bottom: 10px;
+          border-bottom: 1px solid var(--border-soft);
+        }
+
+        .tooltip-stats strong {
+          color: var(--text);
+          font-weight: 600;
+        }
+
+        .tooltip-desc {
+          font-size: 12px;
+          color: var(--text-mute);
+          line-height: 1.5;
         }
 
         .matrix {
