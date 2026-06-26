@@ -57,6 +57,10 @@ export default function ChartDonut({
   centerLabel,
   className = ''
 }: ChartDonutProps) {
+  if (!segments || segments.length === 0) {
+    return <div className="donut">No data</div>
+  }
+
   // Calculate total for percentages
   const total = segments.reduce((acc, seg) => acc + seg.value, 0)
 

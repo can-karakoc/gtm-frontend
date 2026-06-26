@@ -14,6 +14,10 @@ interface ActivityTableProps {
 }
 
 export default function ActivityTable({ runs }: ActivityTableProps) {
+  if (!runs || runs.length === 0) {
+    return <div className="tbl-wrap">No activity data</div>
+  }
+
   return (
     <div className="tbl-wrap">
       <table className="tbl">

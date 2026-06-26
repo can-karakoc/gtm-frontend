@@ -12,6 +12,10 @@ interface EngineFlowProps {
 }
 
 export default function EngineFlow({ stages }: EngineFlowProps) {
+  if (!stages || stages.length === 0) {
+    return <div className="engine">No stages data</div>
+  }
+
   return (
     <div className="engine">
       {stages.map((stage, i) => (

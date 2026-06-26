@@ -21,7 +21,7 @@ export default function LoginPage() {
 
     try {
       await login(username, password, rememberMe)
-      router.push('/overview')
+      router.push('/dashboard/overview')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')
     } finally {

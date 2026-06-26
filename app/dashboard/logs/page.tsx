@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 
 // Icons (SVG components)
 const Icon = {
@@ -291,9 +291,8 @@ export default function RunLogPage() {
             </thead>
             <tbody>
               {RUNS.map((run, i) => (
-                <>
+                <React.Fragment key={i}>
                   <tr
-                    key={i}
                     className={run.err ? 'clickable' : ''}
                     onClick={() => run.err && toggleRun(i)}
                   >
@@ -344,7 +343,7 @@ export default function RunLogPage() {
                       </td>
                     </tr>
                   )}
-                </>
+                </React.Fragment>
               ))}
             </tbody>
           </table>

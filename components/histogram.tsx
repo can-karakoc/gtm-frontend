@@ -31,6 +31,10 @@ export default function Histogram({
   description = 'ICP score · 0–100 · bins of 10 — green bins clear the qualification gate',
   height = 160
 }: HistogramProps) {
+  if (!data || data.length === 0) {
+    return <div className="card">No histogram data</div>
+  }
+
   const maxValue = Math.max(...data);
   const qualifyIndex = Math.floor(qualifyThreshold / 10);
 

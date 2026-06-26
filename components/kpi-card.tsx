@@ -19,7 +19,7 @@ interface KPICardProps {
   /** Icon SVG element or string */
   icon: React.ReactNode;
   /** Sparkline data points (array of numbers) */
-  sparklineData: number[];
+  sparklineData?: number[];
 }
 
 /**
@@ -38,6 +38,8 @@ export default function KPICard({
 }: KPICardProps) {
   // Generate sparkline SVG
   const generateSparkline = () => {
+    if (!sparklineData || sparklineData.length === 0) return null;
+
     const w = 78;
     const h = 26;
     const mx = Math.max(...sparklineData);
