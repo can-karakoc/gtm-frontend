@@ -489,7 +489,7 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:none;border-ra
   grid-template-columns:230px 1fr;
   gap:16px;
   min-width:0;
-  height:calc(100vh - 200px);
+  height:calc(100vh - 240px);
   align-items:stretch;
 }
 .filter-rail{
@@ -506,8 +506,12 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:none;border-ra
   overflow-x:hidden;
   flex:1;
   min-height:0;
+  padding-right:4px;
 }
 .filter-content::-webkit-scrollbar{width:6px}
+.filter-content::-webkit-scrollbar-track{background:transparent}
+.filter-content::-webkit-scrollbar-thumb{background:#222d39;border-radius:99px;border:2px solid transparent}
+.filter-content::-webkit-scrollbar-thumb:hover{background:#2c3a49}
 .ops-layout > .card:last-child{
   overflow:hidden;
   display:flex;
