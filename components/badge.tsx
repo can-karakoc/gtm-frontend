@@ -36,7 +36,18 @@ export default function Badge({
   backgroundColor,
   borderColor,
 }: BadgeProps) {
-  // Color mapping for different statuses (matches GTM Engine design system)
+  /**
+   * Color mapping for different statuses (matches GTM Engine design system)
+   *
+   * OPERATOR STATUS MEANINGS (see memory/project_operator_statuses.md):
+   * - promoted (611): Active STR operators using PMS - PRIMARY TARGETS
+   * - churned (89): Former operators w/ expired subscriptions - WIN-BACK GOLD 💎
+   * - not_str (186): Not STR businesses - EXCLUDE from outreach
+   * - needs_review (63): Ambiguous, needs manual check
+   * - dead (23): Invalid data - FILTER OUT
+   *
+   * Future: Add special visual treatment for "churned" status (highest value segment)
+   */
   const colorMap: Record<string, [string, string]> = {
     raw: ['#5E6E83', 'rgba(94,110,131,.15)'],
     clean: ['#4FA0F0', 'rgba(79,160,240,.15)'],
@@ -48,10 +59,11 @@ export default function Badge({
     qualified: ['#35D399', 'rgba(53,211,153,.15)'],
     disqualified: ['#FB6F84', 'rgba(251,111,132,.15)'],
     synced: ['#22D3EE', 'rgba(34,211,238,.15)'],
-    dead: ['#5E6E83', 'rgba(94,110,131,.15)'],
-    not_str: ['#5E6E83', 'rgba(94,110,131,.15)'],
-    churned: ['#FB6F84', 'rgba(251,111,132,.15)'],
-    needs_review: ['#F5B13D', 'rgba(245,177,61,.15)'],
+    dead: ['#5E6E83', 'rgba(94,110,131,.15)'],           // ☠️ Invalid data
+    not_str: ['#5E6E83', 'rgba(94,110,131,.15)'],        // ⚠️ Not STR business
+    churned: ['#F59E0B', 'rgba(245,158,11,.18)'],        // 🔄💎 Win-back opportunity (orange)
+    promoted: ['#35D399', 'rgba(53,211,153,.15)'],       // ✅ Active operators (green)
+    needs_review: ['#F5B13D', 'rgba(245,177,61,.15)'],   // 🤔 Manual review needed
     no_custom_domain: ['#5E6E83', 'rgba(94,110,131,.15)'],
     publicly_reachable_only: ['#38BDF8', 'rgba(56,189,248,.15)'],
     no_public_contact: ['#FB6F84', 'rgba(251,111,132,.15)'],
