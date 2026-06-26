@@ -121,16 +121,17 @@ export default function ChartDonut({
 
         .big {
           font-family: var(--mono);
-          font-size: 24px;
+          font-size: ${size > 150 ? '24px' : '18px'};
           font-weight: 600;
         }
 
         .lab {
-          font-size: 10px;
+          font-size: ${size > 150 ? '10px' : '9px'};
           color: var(--text-mute);
           text-transform: uppercase;
           letter-spacing: 0.08em;
           font-family: var(--mono);
+          margin-top: ${size > 150 ? '2px' : '1px'};
         }
 
         .mono {

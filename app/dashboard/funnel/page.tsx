@@ -244,16 +244,13 @@ export default function FunnelPage() {
             <div className="card-meta">{confTotal} named</div>
           </div>
           <div className="card-body">
-            <div className="donut-wrap" style={{ marginBottom: '16px' }}>
-              <div className="donut">
-                <ChartDonut segments={nameSegs} size={134} />
-                <div className="center" style={{ inset: '24px' }}>
-                  <div className="big mono" style={{ fontSize: '18px' }}>
-                    {nameTot}
-                  </div>
-                  <div className="lab">named</div>
-                </div>
-              </div>
+            <div className="donut-wrap" style={{ marginBottom: '24px' }}>
+              <ChartDonut
+                segments={nameSegs}
+                size={134}
+                centerValue={nameTot}
+                centerLabel="named"
+              />
               <div style={{ flex: 1, minWidth: '140px' }}>
                 <div className="legend" style={{ flexDirection: 'column', gap: '7px' }}>
                   {NAME_SRC.map((s) => (
@@ -266,10 +263,10 @@ export default function FunnelPage() {
                 </div>
               </div>
             </div>
-            <div className="fr-title">Confidence</div>
+            <div className="fr-title" style={{ marginTop: '18px' }}>Confidence</div>
             {conf.map((c) => (
               <div key={c.label} className="bar-row">
-                <div className="lab">{c.label}</div>
+                <div className="lab" style={{ width: '80px', textAlign: 'right' }}>{c.label}</div>
                 <div className="bar-track">
                   <div
                     className="bar-fill"
@@ -281,6 +278,7 @@ export default function FunnelPage() {
                     {c.count}
                   </div>
                 </div>
+                <div className="pct">{((c.count / confTotal) * 100).toFixed(0)}%</div>
               </div>
             ))}
           </div>
@@ -431,13 +429,8 @@ export default function FunnelPage() {
         .donut-wrap {
           display: flex;
           align-items: center;
-          gap: 22px;
+          gap: 26px;
           flex-wrap: wrap;
-        }
-
-        .donut {
-          position: relative;
-          flex: 0 0 168px;
         }
 
         .donut .center {
