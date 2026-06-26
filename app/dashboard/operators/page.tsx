@@ -142,7 +142,7 @@ const OPERATORS = [
   },
 ]
 
-const TIER_FILTERS = ['clay_full', 'clay_email', 'clay_phone', 'clay_linkedin', 'clay_no_data']
+const TIER_FILTERS = ['pre_clay', 'clay_full', 'clay_email', 'clay_phone', 'clay_linkedin', 'clay_no_data']
 const NAME_SOURCES = ['website', 'email_name', 'snov', 'leadmagic', 'clay']
 
 export default function OperatorsPage() {

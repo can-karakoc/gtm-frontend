@@ -67,6 +67,7 @@ export default function Badge({
     no_custom_domain: ['#5E6E83', 'rgba(94,110,131,.15)'],
     publicly_reachable_only: ['#38BDF8', 'rgba(56,189,248,.15)'],
     no_public_contact: ['#FB6F84', 'rgba(251,111,132,.15)'],
+    pre_clay: ['#8B7BFF', 'rgba(139,123,255,.18)'],        // 🎯 Ready for Clay name enrichment (purple)
     clay_full: ['#35D399', 'rgba(53,211,153,.15)'],
     clay_email: ['#22D3EE', 'rgba(34,211,238,.15)'],
     clay_phone: ['#F5B13D', 'rgba(245,177,61,.15)'],
