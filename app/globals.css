@@ -489,7 +489,7 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:none;border-ra
   grid-template-columns:230px 1fr;
   gap:16px;
   min-width:0;
-  height:calc(100vh - 300px);
+  height:calc(100vh - 200px);
   align-items:stretch;
 }
 .filter-rail{
