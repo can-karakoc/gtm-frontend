@@ -86,8 +86,8 @@ export default function FunnelPage() {
 
   // Prepare tier segments for donut chart
   const tierSegs = tiers.map((t: any) => ({
-    v: t.count,
-    c: tierColorMap[t.tier] || '#9CA9BA'
+    value: t.count,
+    color: tierColorMap[t.tier] || '#9CA9BA'
   }))
 
   // Mock name source data (TODO: add API endpoint when name_source tracking is added)
@@ -98,7 +98,7 @@ export default function FunnelPage() {
     { l: 'leadmagic', v: 9, c: '#35D399' },
     { l: 'clay', v: 5, c: '#8B7BFF' },
   ]
-  const nameSegs = NAME_SRC.map((s) => ({ v: s.v, c: s.c }))
+  const nameSegs = NAME_SRC.map((s) => ({ value: s.v, color: s.c }))
   const nameTot = NAME_SRC.reduce((sum, s) => sum + s.v, 0)
 
   // Mock confidence data (TODO: add API endpoint)
@@ -138,8 +138,8 @@ export default function FunnelPage() {
               <div className="donut">
                 <ChartDonut segments={tierSegs} size={168} />
               </div>
-              <div style={{ flex: 1, minWidth: '160px' }}>
-                <div className="legend" style={{ flexDirection: 'column', gap: '8px' }}>
+              <div style={{ flex: 1, minWidth: '240px' }}>
+                <div className="legend legend-grid">
                   {tiers.map((t: any) => (
                     <div key={t.tier} className="li">
                       <span className="sw" style={{ background: tierColorMap[t.tier] || '#9CA9BA' }}></span>
@@ -423,6 +423,12 @@ export default function FunnelPage() {
           flex-wrap: wrap;
           gap: 7px 14px;
           margin-top: 6px;
+        }
+
+        .legend-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 8px;
         }
 
         .legend .li {
