@@ -497,16 +497,18 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:none;border-ra
   flex-direction:column;
   overflow:hidden;
   height:100%;
+  padding-right:0 !important;
 }
 .filter-header{
   flex-shrink:0;
+  padding-right:18px;
 }
 .filter-content{
   overflow-y:auto;
   overflow-x:hidden;
   flex:1;
   min-height:0;
-  padding-right:4px;
+  padding-right:12px;
 }
 .filter-content::-webkit-scrollbar{width:6px}
 .filter-content::-webkit-scrollbar-track{background:transparent}
