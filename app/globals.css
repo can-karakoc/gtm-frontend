@@ -488,13 +488,11 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:none;border-ra
 .filter-rail{
   position:sticky;
   top:84px;
+  max-height:calc(100vh - 84px - 16px);
   display:flex;
   flex-direction:column;
-  gap:4px;
-  max-height:calc(100vh - 100px);
   overflow-y:auto;
   overflow-x:hidden;
-  padding-right:4px;
 }
 .filter-rail::-webkit-scrollbar{width:6px}
 .fr-group{padding:14px 0;border-bottom:1px solid var(--border-soft)}
