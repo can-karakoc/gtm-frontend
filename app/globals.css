@@ -196,7 +196,7 @@ input,select{font-family:inherit}
 
 /* ---------- cards & grid ---------- */
 .grid{display:grid;gap:16px}
-.card{background:linear-gradient(180deg,var(--surface),var(--bg-raised));border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-1)}
+.card{background:linear-gradient(180deg,var(--surface),var(--bg-raised));border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-1);min-width:0}
 .card.pad{padding:18px}
 .card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid var(--border-soft)}
 .card-title{font-weight:700;font-size:14px;letter-spacing:-.01em;display:flex;align-items:center;gap:9px}
@@ -238,7 +238,7 @@ input,select{font-family:inherit}
 .meter.good .meter-fill{background:linear-gradient(90deg,var(--good),#6fe6b6)}
 
 /* ---------- tables ---------- */
-.tbl-wrap{overflow:auto;border-radius:0 0 var(--r-lg) var(--r-lg)}
+.tbl-wrap{overflow-x:auto;overflow-y:visible;border-radius:0 0 var(--r-lg) var(--r-lg);min-width:0;width:100%}
 table.tbl{width:100%;border-collapse:collapse;font-size:13px}
 .tbl thead th{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-mute);
   text-align:left;padding:11px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg-raised);font-weight:500;white-space:nowrap}
@@ -484,11 +484,11 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:none;border-ra
 .acc-body pre{margin:0;padding:14px;font-family:var(--mono);font-size:11px;color:var(--text-dim);background:#0a0e13;overflow:auto;line-height:1.6;max-height:260px}
 
 /* filters rail */
-.ops-layout{display:grid;grid-template-columns:230px 1fr;gap:16px;align-items:start}
+.ops-layout{display:grid;grid-template-columns:230px 1fr;gap:16px;align-items:start;min-width:0}
 .filter-rail{
   position:sticky;
   top:84px;
-  max-height:calc(100vh - 84px - 16px);
+  max-height:calc(100vh - 120px);
   display:flex;
   flex-direction:column;
   overflow-y:auto;
