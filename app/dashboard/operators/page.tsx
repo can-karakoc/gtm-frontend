@@ -172,7 +172,7 @@ export default function OperatorsPage() {
   }
 
   return (
-    <div className="page">
+    <div className="page active">
       <div className="page-head">
         <div>
           <div className="eyebrow">Records</div>

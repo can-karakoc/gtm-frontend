@@ -184,7 +184,7 @@ export default function RunLogPage() {
   }
 
   return (
-    <div className="page">
+    <div className="page active">
       <div className="page-head">
         <div>
           <div className="eyebrow">Execution history</div>

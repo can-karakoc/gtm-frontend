@@ -51,17 +51,6 @@ const KPIS = [
   }
 ]
 
-// Engine flow stages
-const STAGES = [
-  { name: 'Raw', subtitle: 'INGESTED', count: '1,000', color: '#5E6E83', icon: <Database /> },
-  { name: 'Cleaned', subtitle: 'LIVE · STR', count: '610', color: '#4FA0F0', drop: '−390', icon: <Broom /> },
-  { name: 'Enrich-ready', subtitle: 'DOMAIN OK', count: '444', color: '#38BDF8', drop: '−166', icon: <Target /> },
-  { name: 'Enriched', subtitle: 'CONTACT', count: '312', color: '#8B7BFF', drop: '−132', icon: <Beaker /> },
-  { name: 'Qualified', subtitle: 'ICP ≥ 55', count: '169', color: '#35D399', drop: '−143', icon: <Check /> },
-  { name: 'Synced', subtitle: 'IN ATTIO', count: '128', color: '#22D3EE', drop: '−41', icon: <Cloud /> },
-  { name: 'SDR Live', subtitle: 'SEQUENCING', count: '96', color: '#7C76FF', drop: '−32', icon: <Send /> }
-]
-
 const STAGE_HEALTH = [
   { name: 'clean', status: 'ok' as const, lastRun: '2m ago', rows: '8', next: '18m', progress: 14, errors: '0', enabled: true, color: '#4FA0F0' },
   { name: 'name_enrich', status: 'ok' as const, lastRun: '11m ago', rows: '24', next: '19m', progress: 38, errors: '0', enabled: true, color: '#38BDF8' },
@@ -119,8 +108,19 @@ function Sparkline({ data, color }: { data: number[], color: string }) {
 }
 
 export default function OverviewPage() {
+  // Engine flow stages (needs to be inside component to use JSX)
+  const STAGES = [
+    { name: 'Raw', subtitle: 'INGESTED', count: '1,000', color: '#5E6E83', icon: <Database /> },
+    { name: 'Cleaned', subtitle: 'LIVE · STR', count: '610', color: '#4FA0F0', drop: '−390', icon: <Broom /> },
+    { name: 'Enrich-ready', subtitle: 'DOMAIN OK', count: '444', color: '#38BDF8', drop: '−166', icon: <Target /> },
+    { name: 'Enriched', subtitle: 'CONTACT', count: '312', color: '#8B7BFF', drop: '−132', icon: <Beaker /> },
+    { name: 'Qualified', subtitle: 'ICP ≥ 55', count: '169', color: '#35D399', drop: '−143', icon: <Check /> },
+    { name: 'Synced', subtitle: 'IN ATTIO', count: '128', color: '#22D3EE', drop: '−41', icon: <Cloud /> },
+    { name: 'SDR Live', subtitle: 'SEQUENCING', count: '96', color: '#7C76FF', drop: '−32', icon: <Send /> }
+  ]
+
   return (
-    <div className="page">
+    <div className="page active">
       <div className="page-head">
         <div>
           <div className="eyebrow">Mission control</div>

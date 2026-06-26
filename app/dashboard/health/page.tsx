@@ -146,7 +146,7 @@ export default function HealthPage() {
   }
 
   return (
-    <div className="page">
+    <div className="page active">
       <div className="page-head">
         <div>
           <div className="eyebrow">Diagnostics</div>
