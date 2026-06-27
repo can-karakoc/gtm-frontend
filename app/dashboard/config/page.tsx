@@ -262,30 +262,23 @@ export default function ConfigurationPage() {
               </div>
             </div>
 
-            <div style={{ padding: '20px' }}>
-              <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '8px', color: 'var(--text-mute)' }}>
-                Stage descriptions (automatic processing)
+            <div style={{ padding: '14px 20px 10px', borderBottom: '1px solid var(--border-soft)' }}>
+              <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Pipeline stages (automatic)
               </div>
             </div>
-            <div className="stage-cfg">
+            <div style={{ padding: '12px 20px', display: 'grid', gap: '8px' }}>
               {stageSettings.map(stage => (
                 <div
                   key={stage.key}
-                  className="cfg-row"
-                  style={{ '--sc': stage.color } as React.CSSProperties}
+                  style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '16px 20px', borderBottom: '1px solid var(--border-soft)' }}>
-                    <span className="ic" style={{ color: stage.color, marginTop: '2px' }}>
-                      {getStageIcon(stage.key)}
-                    </span>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '4px', color: 'var(--text)' }}>
-                        {stage.name}
-                      </div>
-                      <div style={{ fontSize: '12px', color: 'var(--text-mute)', lineHeight: '1.5' }}>
-                        {stage.subtitle}
-                      </div>
-                    </div>
+                  <span className="ic" style={{ color: stage.color, width: '16px', height: '16px', flexShrink: 0 }}>
+                    {getStageIcon(stage.key)}
+                  </span>
+                  <div style={{ fontSize: '12px', color: 'var(--text)' }}>
+                    <span style={{ fontWeight: 600 }}>{stage.name}:</span>{' '}
+                    <span style={{ color: 'var(--text-mute)' }}>{stage.subtitle}</span>
                   </div>
                 </div>
               ))}
