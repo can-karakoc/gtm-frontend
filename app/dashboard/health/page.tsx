@@ -70,39 +70,55 @@ export default function HealthPage() {
     ic: iconMap[stage.name] || 'pulse'
   })) || []
 
-  // Debug logging (after stageHealth is defined)
-  console.log('✅ Raw API Data:', stageHealthData)
-  console.log('📊 Stages from API:', stageHealthData?.stages)
-  console.log('🎯 Transformed stageHealth:', stageHealth)
-  console.log('📏 Array length:', stageHealth.length)
+  // Generate real alerts from stage health data
+  const alerts: Alert[] = []
 
-  // Mock data - Alerts
-  const alerts: Alert[] = [
-    {
-      lvl: 'warn',
-      t: 'Clay budget at 80%',
-      d: '80 of 100 daily rows consumed. Clay push pauses at cap (~14:55).',
-      time: '12m ago'
-    },
-    {
-      lvl: 'err',
-      t: 'Sync stage failing',
-      d: '3 consecutive failures — pending migration adds attio_list_entry_id. Apply before next run.',
-      time: '1h 6m ago'
-    },
-    {
-      lvl: 'info',
-      t: 'Ingest complete',
-      d: '312 operators added from facebook-str-batch-06.csv · 29 duplicates skipped.',
-      time: '3h ago'
-    },
-    {
-      lvl: 'info',
-      t: 'Coverage milestone',
-      d: 'Pre-Clay name coverage crossed 27% (+4pt week-over-week).',
-      time: '1d ago'
+  if (stageHealth && stageHealth.length > 0) {
+    stageHealth.forEach(stage => {
+      const queueSize = parseInt(stage.rows) || 0
+      const errorCount = parseInt(stage.err) || 0
+
+      // Alert: Large queue backlog
+      if (queueSize >= 500) {
+        alerts.push({
+          lvl: 'warn',
+          t: `${stage.nm} has large backlog`,
+          d: `${queueSize.toLocaleString()} operators queued. Consider running the ${stage.nm} stage manually.`,
+          time: stage.last
+        })
+      }
+
+      // Alert: Stage errors
+      if (errorCount > 0) {
+        alerts.push({
+          lvl: 'err',
+          t: `${stage.nm} stage failing`,
+          d: `${errorCount} error(s) in last run. Check logs for details.`,
+          time: stage.last
+        })
+      }
+    })
+
+    // Alert: Scheduler status
+    if (stageHealth[0]?.next === 'manual') {
+      alerts.push({
+        lvl: 'info',
+        t: 'Pipeline scheduler is off',
+        d: 'All stages are set to manual triggering. Operators will not be processed automatically.',
+        time: 'now'
+      })
     }
-  ]
+  }
+
+  // If no alerts, show a healthy status
+  if (alerts.length === 0) {
+    alerts.push({
+      lvl: 'info',
+      t: 'All systems operational',
+      d: 'No issues detected. Pipeline is running smoothly.',
+      time: 'now'
+    })
+  }
 
   // Icon mapping
   const getIcon = (iconName: string) => {
@@ -214,7 +230,10 @@ export default function HealthPage() {
             <Bell className="ic" style={{ width: '16px', height: '16px' }} />
             Alerts
           </div>
-          <div className="card-meta">last 4 · 2 active</div>
+          <div className="card-meta">
+            {alerts.length} {alerts.length === 1 ? 'alert' : 'alerts'} ·
+            {alerts.filter(a => a.lvl === 'err' || a.lvl === 'warn').length} active
+          </div>
         </div>
         <div>
           {alerts.map((alert, idx) => (
