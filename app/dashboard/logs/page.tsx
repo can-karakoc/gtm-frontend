@@ -152,44 +152,17 @@ export default function RunLogPage() {
     refreshInterval: 30000 // Auto-refresh every 30 seconds
   })
 
-  const runs: Run[] = runsData?.runs || []
-
-  // Calculate today's total cost from runs
-  const todayCost = runs.reduce((sum, run) => sum + (run.cost || 0), 0)
-
-  // Calculate cost by stage (aggregate from all runs)
-  const costByStageMap: Record<string, number> = {}
-  runs.forEach(run => {
-    if (!costByStageMap[run.stage]) {
-      costByStageMap[run.stage] = 0
-    }
-    costByStageMap[run.stage] += run.cost || 0
+  // Fetch cost summary
+  const { data: costData } = useSWR('/api/data/cost-summary', fetcher, {
+    refreshInterval: 30000
   })
 
-  const stageColorMap: Record<string, string> = {
-    'clay_push': '#8B7BFF',
-    'name_enrich': '#38BDF8',
-    'clean': '#4FA0F0',
-    'score': '#5FD0C0',
-    'sync': '#22D3EE'
-  }
+  const runs: Run[] = runsData?.runs || []
 
-  const byStage = Object.entries(costByStageMap)
-    .map(([stage, cost]) => ({
-      name: stage.replace(/_/g, ' '),
-      cost,
-      color: stageColorMap[stage] || '#9CA9BA'
-    }))
-    .sort((a, b) => b.cost - a.cost)
-
-  const maxCost = Math.max(...byStage.map(s => s.cost), 0.01) // Avoid division by zero
-
-  // For now, use mock data for daily trend (would need date-based aggregation from backend)
-  const daily = [0.12, 0.08, 0.15, 0.21, 0.18, 0.09, todayCost]
-  const cumulative = daily.reduce((acc: number[], val, i) => {
-    acc.push((acc[i - 1] || 0) + val)
-    return acc
-  }, [])
+  // Use real cost data from API
+  const todayCost = costData?.totals?.today || 0
+  const daily = costData?.daily?.map((d: any) => d.cost) || [0, 0, 0, 0, 0, 0, 0]
+  const cumulative = costData?.cumulative?.map((d: any) => d.cumulative) || [0, 0, 0, 0, 0, 0, 0]
 
   const toggleRun = (index: number) => {
     setExpandedRun(expandedRun === index ? null : index)
