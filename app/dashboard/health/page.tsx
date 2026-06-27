@@ -34,9 +34,13 @@ interface Alert {
 
 export default function HealthPage() {
   // Fetch stage health from API
-  const { data: stageHealthData } = useSWR('/api/data/stage-health', fetcher, {
+  const { data: stageHealthData, error } = useSWR('/api/data/stage-health', fetcher, {
     refreshInterval: 30000 // Refresh every 30 seconds
   })
+
+  // Debug logging
+  console.log('Stage Health Data:', stageHealthData)
+  console.log('Stage Health Error:', error)
 
   // Mock data - System dependencies
   const systemDependencies: SystemDependency[] = [
