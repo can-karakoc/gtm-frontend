@@ -39,8 +39,15 @@ export default function HealthPage() {
   })
 
   // Debug logging
-  console.log('Stage Health Data:', stageHealthData)
-  console.log('Stage Health Error:', error)
+  if (stageHealthData) {
+    console.log('✅ Stage Health Data received:', stageHealthData)
+    console.log('📊 Stages array:', stageHealthData.stages)
+  }
+  if (error) {
+    console.error('❌ Stage Health Error:', error)
+  }
+  console.log('🎯 Transformed stageHealth array length:', stageHealth.length)
+  console.log('🎯 Transformed stageHealth:', stageHealth)
 
   // Mock data - System dependencies
   const systemDependencies: SystemDependency[] = [
@@ -172,15 +179,17 @@ export default function HealthPage() {
                 <b>{stage.last}</b>
               </div>
               <div className="hr">
-                <span>rows (last)</span>
-                <b>{stage.rows}</b>
+                <span>queued</span>
+                <b style={{ color: parseInt(stage.rows) > 500 ? 'var(--warn)' : 'var(--text)' }}>
+                  {stage.rows}
+                </b>
               </div>
               <div className="hr">
-                <span>next</span>
+                <span>next run</span>
                 <b>{stage.next}</b>
               </div>
               <div className="hr">
-                <span>errors 24h</span>
+                <span>errors</span>
                 <b style={{ color: stage.err === '0' ? 'var(--good)' : 'var(--bad)' }}>
                   {stage.err}
                 </b>
