@@ -99,6 +99,7 @@ export default function ConfigurationPage() {
       setGlobalBatchSize(configData.batch_size_clean || 100)
       setMinScore(configData.min_score_to_qualify || 55)
       setRequireVerifiedEmail(configData.require_verified_email || false)
+      setClayBudget(configData.daily_clay_budget || 100)
     }
   }, [configData])
   const [clayBudget, setClayBudget] = useState(100)
@@ -191,7 +192,10 @@ export default function ConfigurationPage() {
 
         // Quality gates
         min_score_to_qualify: minScore,
-        require_verified_email: requireVerifiedEmail
+        require_verified_email: requireVerifiedEmail,
+
+        // Clay budget
+        daily_clay_budget: clayBudget
       }
 
       const response = await fetch('http://localhost:8000/api/data/config', {
