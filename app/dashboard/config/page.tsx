@@ -326,17 +326,24 @@ export default function ConfigurationPage() {
               </svg>
               Quality gates
             </div>
-            <div className="ctrl" style={{ minWidth: 'auto', marginBottom: '16px' }}>
-              <div className="cl">
-                Minimum score to qualify <b>{minScore}</b>
+            <div className="ctrl" style={{ minWidth: 'auto', marginBottom: '8px' }}>
+              <div className="cl" style={{ fontSize: '13px', fontWeight: 600 }}>
+                Minimum ICP score to sync to Attio: <b style={{ color: 'var(--brand)' }}>{minScore}</b>
               </div>
               <input
                 type="range"
                 min="0"
                 max="100"
+                step="5"
                 value={minScore}
                 onChange={e => setMinScore(parseInt(e.target.value))}
               />
+              <div style={{ fontSize: '11px', color: 'var(--text-faint)', marginTop: '4px' }}>
+                0 (sync all) ← → 100 (only perfect fits)
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--text-mute)', marginTop: '6px', padding: '8px', background: 'var(--bg-raised)', borderRadius: '4px' }}>
+                💡 Operators with score ≥ {minScore} will be synced to Attio. Recommended: 55+ for qualified leads.
+              </div>
             </div>
             <div
               style={{
@@ -367,14 +374,25 @@ export default function ConfigurationPage() {
                 <span className="tk"></span>
               </label>
             </div>
-            <div className="field" style={{ marginTop: '12px' }}>
-              <label>Daily Clay budget (rows)</label>
+            <div className="field" style={{ marginTop: '16px' }}>
+              <label style={{ fontSize: '13px', fontWeight: 600, marginBottom: '6px', display: 'block' }}>
+                Daily Clay enrichment limit
+              </label>
+              <div style={{ fontSize: '11px', color: 'var(--text-mute)', marginBottom: '8px' }}>
+                Maximum number of operators to send to Clay per day (cost control)
+              </div>
               <input
                 className="input"
                 type="number"
+                min="0"
+                max="1000"
                 value={clayBudget}
                 onChange={e => setClayBudget(parseInt(e.target.value) || 0)}
+                style={{ fontSize: '14px', fontFamily: 'var(--mono)' }}
               />
+              <div style={{ fontSize: '10px', color: 'var(--text-faint)', marginTop: '4px' }}>
+                ~${(clayBudget * 0.02).toFixed(2)}/day at $0.02 per operator
+              </div>
             </div>
           </div>
         </div>
