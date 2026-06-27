@@ -68,20 +68,7 @@ export default function HealthPage() {
     note: stage.note,
     c: stage.color,
     ic: iconMap[stage.name] || 'pulse'
-  })) || [{
-    nm: 'clean',
-    st: 'off',
-    last: 'loading...',
-    rows: '0',
-    next: 'manual',
-    pct: 0,
-    err: '0',
-      enabled: 1,
-      note: 'migration pending',
-      c: '#22D3EE',
-      ic: 'cloud'
-    }
-  ]
+  })) || []
 
   // Mock data - Alerts
   const alerts: Alert[] = [
