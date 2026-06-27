@@ -38,17 +38,6 @@ export default function HealthPage() {
     refreshInterval: 30000 // Refresh every 30 seconds
   })
 
-  // Debug logging
-  if (stageHealthData) {
-    console.log('✅ Stage Health Data received:', stageHealthData)
-    console.log('📊 Stages array:', stageHealthData.stages)
-  }
-  if (error) {
-    console.error('❌ Stage Health Error:', error)
-  }
-  console.log('🎯 Transformed stageHealth array length:', stageHealth.length)
-  console.log('🎯 Transformed stageHealth:', stageHealth)
-
   // Mock data - System dependencies
   const systemDependencies: SystemDependency[] = [
     { nm: 'Pipeline service', st: 'ok', v: '3d 14h', m: 'uptime · gtm-pipeline.fly.dev' },
@@ -80,6 +69,12 @@ export default function HealthPage() {
     c: stage.color,
     ic: iconMap[stage.name] || 'pulse'
   })) || []
+
+  // Debug logging (after stageHealth is defined)
+  console.log('✅ Raw API Data:', stageHealthData)
+  console.log('📊 Stages from API:', stageHealthData?.stages)
+  console.log('🎯 Transformed stageHealth:', stageHealth)
+  console.log('📏 Array length:', stageHealth.length)
 
   // Mock data - Alerts
   const alerts: Alert[] = [
