@@ -71,6 +71,7 @@ type Preset = 'conservative' | 'balanced' | 'aggressive'
 export default function ConfigurationPage() {
   const [stageSettings, setStageSettings] = useState(STAGE_CONFIG)
   const [selectedPreset, setSelectedPreset] = useState<Preset>('balanced')
+  const [pipelineEnabled, setPipelineEnabled] = useState(true)
   const [minScore, setMinScore] = useState(55)
   const [requireVerifiedEmail, setRequireVerifiedEmail] = useState(false)
   const [clayBudget, setClayBudget] = useState(100)
@@ -162,6 +163,33 @@ export default function ConfigurationPage() {
       <div className="cfg-grid">
         {/* Left column: Stage runners & controls */}
         <div className="stage-cfg">
+          {/* Pipeline Control */}
+          <div className="card pad" style={{ marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <div>
+                <div style={{ fontSize: '15px', fontWeight: 700, marginBottom: '4px' }}>
+                  Pipeline Automation
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--text-mute)' }}>
+                  {pipelineEnabled
+                    ? '✓ Pipeline is running - operators are processed automatically'
+                    : '✗ Pipeline is paused - operators will queue until enabled'}
+                </div>
+              </div>
+              <label className="switch" style={{ transform: 'scale(1.2)' }}>
+                <input
+                  type="checkbox"
+                  checked={pipelineEnabled}
+                  onChange={() => setPipelineEnabled(!pipelineEnabled)}
+                />
+                <span className="tk"></span>
+              </label>
+            </div>
+            <div style={{ padding: '12px', background: 'var(--bg-raised)', borderRadius: '6px', fontSize: '11px', color: 'var(--text-mute)', lineHeight: '1.5' }}>
+              <strong style={{ color: 'var(--text)' }}>How it works:</strong> When enabled, the pipeline automatically reads operators from the raw table and processes them through all stages (Clean → Name Enrich → Score → Sync). Each stage runs at fixed intervals below.
+            </div>
+          </div>
+
           {/* Stage runners card */}
           <div className="card">
             <div className="card-head">
@@ -179,12 +207,12 @@ export default function ConfigurationPage() {
                   <circle cx="16" cy="8" r="2.2" />
                   <circle cx="8" cy="16" r="2.2" />
                 </svg>
-                Stage runners
+                Stage timing & batch sizes
               </div>
-              <div className="card-meta">live · applies next tick</div>
+              <div className="card-meta">{pipelineEnabled ? 'active' : 'paused'}</div>
             </div>
             <div style={{ padding: '14px 20px', background: 'var(--bg-raised)', borderBottom: '1px solid var(--border-soft)', fontSize: '12px', color: 'var(--text-mute)', lineHeight: '1.5' }}>
-              <strong style={{ color: 'var(--text)' }}>How it works:</strong> Each stage runs automatically at the interval you set, processing up to the batch size you specify. Toggle stages on/off with the switch on the right.
+              Configure how often each stage runs and how many operators to process per batch. All stages run automatically when pipeline is enabled.
             </div>
             <div className="stage-cfg">
               {stageSettings.map(stage => (
@@ -206,7 +234,7 @@ export default function ConfigurationPage() {
                       </small>
                     </div>
                   </div>
-                  <div className="cfg-controls">
+                  <div className="cfg-controls" style={{ opacity: pipelineEnabled ? 1 : 0.5 }}>
                     <div className="ctrl">
                       <div className="cl">
                         Run every <b>{stage.interval} minutes</b>
@@ -223,6 +251,7 @@ export default function ConfigurationPage() {
                             parseInt(e.target.value)
                           )
                         }
+                        disabled={!pipelineEnabled}
                       />
                       <div style={{ fontSize: '10px', color: 'var(--text-faint)', marginTop: '4px' }}>
                         5m (fast) ← → 120m (slow)
@@ -241,19 +270,12 @@ export default function ConfigurationPage() {
                         onChange={e =>
                           handleBatchChange(stage.key, parseInt(e.target.value))
                         }
+                        disabled={!pipelineEnabled}
                       />
                       <div style={{ fontSize: '10px', color: 'var(--text-faint)', marginTop: '4px' }}>
                         10 (small batches) ← → {stage.batchMax} (large batches)
                       </div>
                     </div>
-                    <label className={`switch ${stage.danger ? 'danger' : ''}`}>
-                      <input
-                        type="checkbox"
-                        checked={stage.enabled}
-                        onChange={() => handleToggle(stage.key)}
-                      />
-                      <span className="tk"></span>
-                    </label>
                   </div>
                 </div>
               ))}
