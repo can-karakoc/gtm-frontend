@@ -433,10 +433,10 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:none;border-ra
 .hcard .hh{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border-soft)}
 .hcard .hh .ic{width:18px;height:18px;color:var(--sc)}
 .hcard .hh .nm{font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:0.05em}
-.hcard .hr{display:flex;flex-direction:column;gap:6px;margin:16px 0;padding-bottom:16px;border-bottom:1px solid var(--border-soft)}
-.hcard .hr:last-child{border-bottom:none;padding-bottom:0}
-.hcard .hr span{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;font-weight:500}
-.hcard .hr b{font-family:var(--mono);color:var(--text-bright);font-weight:700;font-size:18px;letter-spacing:-0.02em;line-height:1.2}
+.hcard .hm{display:flex;flex-direction:column;gap:6px;margin:16px 0;padding-bottom:16px;border-bottom:1px solid var(--border-soft)}
+.hcard .hm:last-child{border-bottom:none;padding-bottom:0}
+.hcard .hm span{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;font-weight:500}
+.hcard .hm b{font-family:var(--mono);color:var(--text-bright);font-weight:700;font-size:18px;letter-spacing:-0.02em;line-height:1.2}
 
 /* ---------- modal ---------- */
 .overlay{position:fixed;inset:0;background:rgba(6,9,13,.72);backdrop-filter:blur(6px);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:46px 20px;overflow-y:auto}

@@ -169,21 +169,21 @@ export default function HealthPage() {
                 <span className="nm">{stage.nm}</span>
                 <span className={`st ${stage.st}`} style={{ marginLeft: 'auto' }}></span>
               </div>
-              <div className="hr">
+              <div className="hm">
                 <span>last run</span>
                 <b>{stage.last}</b>
               </div>
-              <div className="hr">
+              <div className="hm">
                 <span>queued</span>
                 <b style={{ color: parseInt(stage.rows) > 500 ? 'var(--warn)' : 'var(--text)' }}>
                   {stage.rows}
                 </b>
               </div>
-              <div className="hr">
+              <div className="hm">
                 <span>next run</span>
                 <b>{stage.next}</b>
               </div>
-              <div className="hr">
+              <div className="hm">
                 <span>errors</span>
                 <b style={{ color: stage.err === '0' ? 'var(--good)' : 'var(--bad)' }}>
                   {stage.err}
