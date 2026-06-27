@@ -212,73 +212,7 @@ export default function RunLogPage() {
         </div>
       </div>
 
-      {/* Cost overview cards */}
-      <div className="three">
-        <div className="card pad">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-            <div className="card-title" style={{ fontSize: '13px' }}>
-              {Icon.dollar} Daily spend
-            </div>
-            <span className="mono" style={{ fontSize: '18px', fontWeight: 600, color: 'var(--accent)' }}>
-              ${todayCost.toFixed(2)}
-            </span>
-          </div>
-          <MiniBars values={daily} color="#F5B13D" />
-          <div className="mono" style={{ fontSize: '10px', color: 'var(--text-faint)', marginTop: '8px', textAlign: 'center' }}>
-            last 7 days
-          </div>
-        </div>
-
-        <div className="card pad">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-            <div className="card-title" style={{ fontSize: '13px' }}>
-              {Icon.gauge} Cumulative
-            </div>
-            <span className="mono" style={{ fontSize: '18px', fontWeight: 600 }}>
-              ${cumulative[cumulative.length - 1].toFixed(2)}
-            </span>
-          </div>
-          <MiniLine values={cumulative} color="#7C76FF" />
-          <div className="mono" style={{ fontSize: '10px', color: 'var(--text-faint)', marginTop: '8px', textAlign: 'center' }}>
-            running total · this week
-          </div>
-        </div>
-
-        <div className="card pad">
-          <div className="card-title" style={{ fontSize: '13px', marginBottom: '14px' }}>
-            {Icon.sparkles} Cost by stage
-          </div>
-          {byStage.length > 0 ? (
-            byStage.map((stage, i) => (
-              <div key={i} className="bar-row" style={{ padding: '6px 0' }}>
-                <div className="lab" style={{ width: '150px', flexBasis: '150px', fontSize: '11.5px' }}>
-                  {stage.name}
-                </div>
-                <div className="bar-track" style={{ height: '18px' }}>
-                  <div
-                    className="bar-fill"
-                    style={{
-                      width: `${stage.cost > 0 ? (stage.cost / maxCost) * 100 : 1}%`,
-                      background: stage.color
-                    }}
-                  >
-                    ${stage.cost.toFixed(2)}
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-dim)', fontSize: '12px' }}>
-              No cost data yet
-            </div>
-          )}
-          {byStage.length > 0 && (
-            <div className="mono" style={{ fontSize: '10px', color: 'var(--text-faint)', marginTop: '8px' }}>
-              Total cost across all stages: ${byStage.reduce((sum, s) => sum + s.cost, 0).toFixed(2)}
-            </div>
-          )}
-        </div>
-      </div>
+      {/* Cost overview cards - removed temporarily until cost tracking is implemented */}
 
       {/* Runs table */}
       <div className="card section-gap">
