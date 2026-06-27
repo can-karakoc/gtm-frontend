@@ -433,9 +433,9 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:none;border-ra
 .hcard .hh{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border-soft)}
 .hcard .hh .ic{width:18px;height:18px;color:var(--sc)}
 .hcard .hh .nm{font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:0.05em}
-.hcard .hr{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:13px;color:var(--text-mute);margin:10px 0;line-height:1.6}
-.hcard .hr span{flex:0 0 auto;min-width:70px}
-.hcard .hr b{font-family:var(--mono);color:var(--text);font-weight:600;font-size:15px;text-align:right;flex:1;white-space:nowrap}
+.hcard .hr{display:flex;flex-direction:column;gap:4px;margin:12px 0}
+.hcard .hr span{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;font-weight:500}
+.hcard .hr b{font-family:var(--mono);color:var(--text-bright);font-weight:700;font-size:18px;letter-spacing:-0.02em}
 
 /* ---------- modal ---------- */
 .overlay{position:fixed;inset:0;background:rgba(6,9,13,.72);backdrop-filter:blur(6px);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:46px 20px;overflow-y:auto}
