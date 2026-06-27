@@ -212,7 +212,38 @@ export default function RunLogPage() {
         </div>
       </div>
 
-      {/* Cost overview cards - removed temporarily until cost tracking is implemented */}
+      {/* Cost overview cards */}
+      <div className="two">
+        <div className="card pad">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+            <div className="card-title" style={{ fontSize: '13px' }}>
+              {Icon.dollar} Daily spend
+            </div>
+            <span className="mono" style={{ fontSize: '18px', fontWeight: 600, color: 'var(--accent)' }}>
+              ${todayCost.toFixed(2)}
+            </span>
+          </div>
+          <MiniBars values={daily} color="#F5B13D" />
+          <div className="mono" style={{ fontSize: '10px', color: 'var(--text-faint)', marginTop: '8px', textAlign: 'center' }}>
+            last 7 days
+          </div>
+        </div>
+
+        <div className="card pad">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+            <div className="card-title" style={{ fontSize: '13px' }}>
+              {Icon.gauge} Cumulative
+            </div>
+            <span className="mono" style={{ fontSize: '18px', fontWeight: 600 }}>
+              ${cumulative[cumulative.length - 1].toFixed(2)}
+            </span>
+          </div>
+          <MiniLine values={cumulative} color="#7C76FF" />
+          <div className="mono" style={{ fontSize: '10px', color: 'var(--text-faint)', marginTop: '8px', textAlign: 'center' }}>
+            running total · this week
+          </div>
+        </div>
+      </div>
 
       {/* Runs table */}
       <div className="card section-gap">
