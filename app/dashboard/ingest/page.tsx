@@ -1,6 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
+import useSWR from 'swr'
+import { fetcher } from '@/lib/api'
 import {
   Upload,
   FileText,
@@ -26,6 +28,13 @@ export default function IngestPage() {
   const [showPreview, setShowPreview] = useState(false)
   const [ingesting, setIngesting] = useState(false)
   const [progress, setProgress] = useState(0)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Fetch ingestion history
+  const { data: ingestData } = useSWR('/api/data/ingestion-history', fetcher, {
+    refreshInterval: 30000
+  })
 
   // Mock data for preview
   const previewRows = [
@@ -49,26 +58,55 @@ export default function IngestPage() {
     { type: 'err', message: '4 rows missing domain — will be skipped' }
   ]
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file && file.name.endsWith('.csv')) {
+      setSelectedFile(file)
+      setShowPreview(true)
+      // TODO: Parse CSV and show real preview
+    } else {
+      alert('Please select a CSV file')
+    }
+  }
+
+  const handleBrowseClick = () => {
+    fileInputRef.current?.click()
+  }
+
   const handleUseSample = () => {
     setShowPreview(true)
   }
 
-  const handleIngest = () => {
+  const handleIngest = async () => {
+    if (!selectedFile) return
+
     setIngesting(true)
-    // Simulate ingestion progress
-    let currentProgress = 0
-    const interval = setInterval(() => {
-      currentProgress += 10
-      setProgress(currentProgress)
-      if (currentProgress >= 100) {
-        clearInterval(interval)
-        setTimeout(() => {
-          setIngesting(false)
-          setShowPreview(false)
-          setProgress(0)
-        }, 500)
-      }
-    }, 400)
+
+    try {
+      const formData = new FormData()
+      formData.append('file', selectedFile)
+
+      const response = await fetch('http://localhost:8000/ingest', {
+        method: 'POST',
+        body: formData
+      })
+
+      const result = await response.json()
+
+      setProgress(100)
+      setTimeout(() => {
+        setIngesting(false)
+        setShowPreview(false)
+        setProgress(0)
+        setSelectedFile(null)
+        alert(`Ingested ${result.inserted} operators (${result.skipped} duplicates skipped)`)
+      }, 500)
+    } catch (error) {
+      console.error('Ingestion failed:', error)
+      alert('Ingestion failed. Check console for details.')
+      setIngesting(false)
+      setProgress(0)
+    }
   }
 
   return (
@@ -87,9 +125,16 @@ export default function IngestPage() {
       {/* Drop Zone */}
       <div
         className="drop-zone"
-        onClick={handleUseSample}
+        onClick={handleBrowseClick}
         style={{ display: showPreview ? 'none' : 'block' }}
       >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".csv"
+          onChange={handleFileSelect}
+          style={{ display: 'none' }}
+        />
         <div className="dz-ic">
           <Upload size={20} />
         </div>
@@ -99,10 +144,6 @@ export default function IngestPage() {
         <div className="muted" style={{ fontSize: '12.5px', marginTop: '6px' }}>
           Streams in chunks · up to 500 MB · auto-detects domain, company_name, email, phone
         </div>
-        <button className="btn primary" style={{ marginTop: '16px' }} onClick={handleUseSample}>
-          <Zap size={15} />
-          Use sample · facebook-str-batch-06.csv
-        </button>
       </div>
 
       {/* Preview Section */}
@@ -258,6 +299,88 @@ export default function IngestPage() {
           </div>
         </div>
       )}
+
+      {/* Ingestion History Table */}
+      <div className="card section-gap">
+        <div className="card-head">
+          <div className="card-title">
+            <FileText size={16} />
+            Ingestion history
+          </div>
+          <div className="card-meta">
+            {ingestData?.total || 0} total operators ingested
+          </div>
+        </div>
+        <div className="tbl-wrap">
+          <table className="tbl">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Imported</th>
+                <th>Total Rows</th>
+                <th>Processed</th>
+                <th>Status</th>
+                <th>% Complete</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ingestData?.batches?.length ? (
+                ingestData.batches.map((batch: any, i: number) => {
+                  const totalRows = batch.total_rows || 0
+                  const processed = batch.promoted + batch.churned + batch.dead + batch.not_str
+                  const percentComplete = totalRows > 0 ? Math.round((processed / totalRows) * 100) : 0
+
+                  return (
+                    <tr key={i}>
+                      <td>
+                        <span className="badge" style={{ fontSize: '11px' }}>
+                          {batch.category}
+                        </span>
+                      </td>
+                      <td className="cell-mono cell-dim">
+                        {new Date(batch.imported_at).toLocaleDateString()}
+                      </td>
+                      <td className="cell-mono">{totalRows.toLocaleString()}</td>
+                      <td className="cell-mono">
+                        <span style={{ color: 'var(--good)' }}>{processed.toLocaleString()}</span>
+                      </td>
+                      <td>
+                        <div style={{ fontSize: '11px', color: 'var(--text-mute)' }}>
+                          {batch.promoted > 0 && <div>✓ {batch.promoted} promoted</div>}
+                          {batch.churned > 0 && <div>↻ {batch.churned} churned</div>}
+                          {batch.needs_review > 0 && <div>? {batch.needs_review} review</div>}
+                          {batch.dead > 0 && <div>✗ {batch.dead} dead</div>}
+                          {batch.not_str > 0 && <div>− {batch.not_str} not STR</div>}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="meter sm" style={{ maxWidth: '120px' }}>
+                          <div
+                            className="meter-fill"
+                            style={{
+                              width: `${percentComplete}%`,
+                              background: percentComplete === 100 ? 'var(--good)' : 'var(--brand)'
+                            }}
+                          ></div>
+                        </div>
+                        <div className="mono" style={{ fontSize: '10px', color: 'var(--text-mute)', marginTop: '4px' }}>
+                          {percentComplete}%
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })
+              ) : (
+                <tr>
+                  <td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-dim)' }}>
+                    No ingestion history yet
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   )
 }
