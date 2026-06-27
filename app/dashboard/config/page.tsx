@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import useSWR from 'swr'
+import { fetcher } from '@/lib/api'
 
 // Stage configuration with explanations
 const STAGE_CONFIG = [
@@ -76,24 +78,34 @@ export default function ConfigurationPage() {
   const [requireVerifiedEmail, setRequireVerifiedEmail] = useState(false)
   const [clayBudget, setClayBudget] = useState(100)
 
-  // Calculate cost estimates
-  const calculateCosts = () => {
-    const claySetting = stageSettings.find(s => s.key === 'clay_push')
+  // Fetch real cost data
+  const { data: costData } = useSWR('/api/data/cost-summary', fetcher, {
+    refreshInterval: 30000
+  })
+
+  // Calculate estimated costs (projection based on current settings)
+  const calculateEstimatedCosts = () => {
     const nameSetting = stageSettings.find(s => s.key === 'name_enrich')
     const cleanSetting = stageSettings.find(s => s.key === 'clean')
 
-    const clayDaily = claySetting && claySetting.enabled ? clayBudget * 0.02 : 0
-    const nameDaily = nameSetting && nameSetting.enabled ? nameSetting.batch * 0.01 : 0
-    const cleanDaily = cleanSetting && cleanSetting.enabled ? cleanSetting.batch * 0.005 : 0
+    // Estimate based on batch size and run frequency
+    const runsPerDay = 1440 / (nameSetting?.interval || 30) // minutes in a day / interval
+    const nameDaily = nameSetting && pipelineEnabled ? (nameSetting.batch * runsPerDay * 0.01) : 0
+    const cleanDaily = cleanSetting && pipelineEnabled ? (cleanSetting.batch * runsPerDay * 0.005) : 0
 
-    const daily = clayDaily + nameDaily + cleanDaily
-    const weekly = daily * 7
-    const monthly = daily * 30
+    const daily = nameDaily + cleanDaily
 
-    return { clayDaily, nameDaily, cleanDaily, daily, weekly, monthly }
+    return { nameDaily, cleanDaily, daily }
   }
 
-  const costs = calculateCosts()
+  const estimatedCosts = calculateEstimatedCosts()
+
+  // Real costs from API (today, this week, all time)
+  const realCosts = {
+    today: costData?.totals?.today || 0,
+    thisWeek: costData?.totals?.this_week || 0,
+    allTime: costData?.totals?.all_time || 0
+  }
 
   const handleIntervalChange = (key: string, value: number) => {
     setStageSettings(prev =>
@@ -419,12 +431,12 @@ export default function ConfigurationPage() {
           </div>
         </div>
 
-        {/* Right column: Cost calculator */}
+        {/* Right column: Cost tracker */}
         <div className="card pad cost-calc">
-          <div className="eyebrow">Live estimate</div>
+          <div className="eyebrow">Actual cost (pre-Clay)</div>
           <div className="cost-big">
-            ${costs.daily.toFixed(2)}
-            <small> / day</small>
+            ${realCosts.today.toFixed(2)}
+            <small> / today</small>
           </div>
           <div
             className="mono"
@@ -434,81 +446,35 @@ export default function ConfigurationPage() {
               marginTop: '2px'
             }}
           >
-            at current settings
+            from pipeline runs
           </div>
-          <div style={{ margin: '18px 0 6px' }}>
-            <div className="cost-line">
-              <span className="cl-l">
-                <svg
-                  width="1em"
-                  height="1em"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8z" />
-                  <path d="M19 14l.7 1.8L21.5 16.5l-1.8.7L19 19l-.7-1.8L16.5 16.5l1.8-.7z" />
-                </svg>
-                Clay enrichment
-              </span>
-              <span className="cl-v">${costs.clayDaily.toFixed(2)}</span>
-            </div>
-            <div className="cost-line">
-              <span className="cl-l">
-                <svg
-                  width="1em"
-                  height="1em"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <circle cx="12" cy="12" r="8" />
-                  <circle cx="12" cy="12" r="4" />
-                  <circle cx="12" cy="12" r="1" />
-                </svg>
-                Name enrich
-              </span>
-              <span className="cl-v">${costs.nameDaily.toFixed(2)}</span>
-            </div>
-            <div className="cost-line">
-              <span className="cl-l">
-                <svg
-                  width="1em"
-                  height="1em"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M19 5l-7 7M9 15s-2 1-3 3 0 1 0 1 1 1 3 0 3-3 3-3M16 8l3-3M5 19l4-4" />
-                </svg>
-                Clean (LLM)
-              </span>
-              <span className="cl-v">${costs.cleanDaily.toFixed(2)}</span>
-            </div>
+
+          <div className="hr" style={{ margin: '16px 0' }}></div>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span className="muted">This week</span>
+            <b className="mono">${realCosts.thisWeek.toFixed(2)}</b>
           </div>
-          <div className="hr"></div>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span className="muted">Weekly</span>
-            <b className="mono">${costs.weekly.toFixed(2)}</b>
+            <span className="muted">All time</span>
+            <b className="mono">${realCosts.allTime.toFixed(2)}</b>
           </div>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              marginTop: '8px'
-            }}
-          >
-            <span className="muted">Monthly</span>
-            <b className="mono">${costs.monthly.toFixed(2)}</b>
+
+          {/* Estimated cost section */}
+          <div style={{ marginTop: '20px', padding: '12px', background: 'var(--bg-raised)', borderRadius: '6px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-mute)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Projected at current settings
+            </div>
+            <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text)', fontFamily: 'var(--mono)' }}>
+              ${estimatedCosts.daily.toFixed(2)}
+              <small style={{ fontSize: '12px', fontWeight: 400, color: 'var(--text-mute)' }}> / day</small>
+            </div>
+            <div style={{ fontSize: '10px', color: 'var(--text-faint)', marginTop: '4px' }}>
+              if pipeline runs continuously
+            </div>
           </div>
-          {costs.daily > 10 && (
+
+          {estimatedCosts.daily > 10 && (
             <div className="warn-box">
               <svg
                 width="1em"
