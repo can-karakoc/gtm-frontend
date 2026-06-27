@@ -90,16 +90,17 @@ export default function ConfigurationPage() {
     if (configData) {
       // Update pipeline toggle (check if ANY stage is enabled)
       const anyEnabled = ['clean', 'name_enrich', 'clay_push', 'score', 'sync'].some(
-        stage => configData[`stage_${stage}_enabled`]
+        stage => (configData as any)[`stage_${stage}_enabled`]
       )
       setPipelineEnabled(anyEnabled)
 
       // Use clean stage interval as the global interval (simplified model)
-      setGlobalInterval(configData.interval_clean || 30)
-      setGlobalBatchSize(configData.batch_size_clean || 100)
-      setMinScore(configData.min_score_to_qualify || 55)
-      setRequireVerifiedEmail(configData.require_verified_email || false)
-      setClayBudget(configData.daily_clay_budget || 100)
+      const data = configData as any
+      setGlobalInterval(data.interval_clean || 30)
+      setGlobalBatchSize(data.batch_size_clean || 100)
+      setMinScore(data.min_score_to_qualify || 55)
+      setRequireVerifiedEmail(data.require_verified_email || false)
+      setClayBudget(data.daily_clay_budget || 100)
     }
   }, [configData])
   const [clayBudget, setClayBudget] = useState(100)
@@ -133,9 +134,9 @@ export default function ConfigurationPage() {
 
   // Real costs from API (today, this week, all time)
   const realCosts = {
-    today: costData?.totals?.today || 0,
-    thisWeek: costData?.totals?.this_week || 0,
-    allTime: costData?.totals?.all_time || 0
+    today: (costData as any)?.totals?.today || 0,
+    thisWeek: (costData as any)?.totals?.this_week || 0,
+    allTime: (costData as any)?.totals?.all_time || 0
   }
 
   const handleIntervalChange = (key: string, value: number) => {
@@ -545,7 +546,7 @@ export default function ConfigurationPage() {
 
 // Helper function to get stage-specific icons
 function getStageIcon(key: string) {
-  const icons: Record<string, JSX.Element> = {
+  const icons: Record<string, React.ReactElement> = {
     clean: (
       <svg
         width="1em"

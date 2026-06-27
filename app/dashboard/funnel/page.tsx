@@ -87,11 +87,11 @@ export default function FunnelPage() {
   const { data: reachData } = useSWR('/api/data/funnel/reachability-matrix', fetcher)
   const { data: statusCounts } = useSWR('/api/data/status-counts', fetcher)
 
-  const tiers = tierData?.tiers || []
-  const totalEnriched = tierData?.total || 0
+  const tiers = (tierData as any)?.tiers || []
+  const totalEnriched = (tierData as any)?.total || 0
 
-  const scoreBins = scoreData?.bins || []
-  const qualifyThreshold = scoreData?.qualify_threshold || 55
+  const scoreBins = (scoreData as any)?.bins || []
+  const qualifyThreshold = (scoreData as any)?.qualify_threshold || 55
 
   const reach = {
     yy: reachData?.email_phone || 0,
