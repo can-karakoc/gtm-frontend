@@ -58,6 +58,11 @@ const Icons = {
       <path d="M7 17h.01"/>
     </svg>
   ),
+  blueprint: (
+    <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 3h18v18H3zM3 9h18M9 3v18"/>
+    </svg>
+  ),
   search: (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
       <circle cx="11" cy="11" r="7"/>
@@ -90,6 +95,8 @@ const NAV = [
   { p: 'operators', ic: Icons.people, t: 'Operators', badge: '610' },
   { p: 'ingest', ic: Icons.upload, t: 'Ingest' },
   { p: 'config', ic: Icons.sliders, t: 'Configuration' },
+  { sec: 'Design' },
+  { p: 'architecture', ic: Icons.blueprint, t: 'Architecture' },
 ];
 
 const BREADCRUMB_MAP: Record<string, string> = {
@@ -100,6 +107,7 @@ const BREADCRUMB_MAP: Record<string, string> = {
   operators: 'Operators',
   ingest: 'Ingest',
   config: 'Configuration',
+  architecture: 'Pipeline Architecture',
   design: 'Design System',
 };
 

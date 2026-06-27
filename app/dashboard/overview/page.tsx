@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 import useSWR from 'swr'
 import KpiCard from '@/components/kpi-card'
 import EngineFlow from '@/components/engine-flow'
+import PipelineArchitecture from '@/components/pipeline-architecture'
 import StageHealthCard from '@/components/stage-health-card'
 import ActivityTable from '@/components/activity-table'
 import { Database, Broom, Target, Beaker, Check, Cloud, Send } from '@/components/icons'
@@ -213,12 +214,6 @@ export default function OverviewPage() {
               <path d="M12 4v11M8 11l4 4 4-4M5 19h14"/>
             </svg>
             Export
-          </button>
-          <button className="btn primary">
-            <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M6 4l14 8-14 8z"/>
-            </svg>
-            Run all stages
           </button>
         </div>
       </div>
