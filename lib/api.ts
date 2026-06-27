@@ -3,8 +3,8 @@
  * Fetches data from FastAPI backend
  */
 
-// Always call backend directly at localhost:8000
-const API_URL = 'http://localhost:8000'
+// Use environment variable, fallback to production backend
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://gtm-pipeline.fly.dev'
 
 /**
  * Generic API fetcher with credentials
