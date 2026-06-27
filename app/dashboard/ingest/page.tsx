@@ -327,7 +327,7 @@ export default function IngestPage() {
               {ingestData?.batches?.length ? (
                 ingestData.batches.map((batch: any, i: number) => {
                   const totalRows = batch.total_rows || 0
-                  const processed = batch.promoted + batch.churned + batch.dead + batch.not_str
+                  const processed = batch.promoted + batch.churned + batch.needs_review + batch.dead + batch.not_str
                   const percentComplete = totalRows > 0 ? Math.round((processed / totalRows) * 100) : 0
 
                   return (
