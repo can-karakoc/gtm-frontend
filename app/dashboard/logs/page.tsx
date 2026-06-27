@@ -175,7 +175,7 @@ export default function RunLogPage() {
           <div className="eyebrow">Execution history</div>
           <div className="h1">Run log</div>
           <div className="sub">
-            Every scheduler tick and manual trigger, with cost attribution and expandable error payloads. Click a failed run to inspect.
+            Every scheduler tick and manual trigger, with pre-Clay cost attribution and expandable error payloads. Clay costs excluded. Click a failed run to inspect.
           </div>
         </div>
         <div className="head-actions">
@@ -190,7 +190,7 @@ export default function RunLogPage() {
         <div className="card pad">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
             <div className="card-title" style={{ fontSize: '13px' }}>
-              {Icon.dollar} Daily spend
+              {Icon.dollar} Daily spend (pre-Clay)
             </div>
             <span className="mono" style={{ fontSize: '18px', fontWeight: 600, color: 'var(--accent)' }}>
               ${todayCost.toFixed(2)}
@@ -205,7 +205,7 @@ export default function RunLogPage() {
         <div className="card pad">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
             <div className="card-title" style={{ fontSize: '13px' }}>
-              {Icon.gauge} Cumulative
+              {Icon.gauge} Cumulative (pre-Clay)
             </div>
             <span className="mono" style={{ fontSize: '18px', fontWeight: 600 }}>
               ${cumulative[cumulative.length - 1].toFixed(2)}
@@ -275,7 +275,9 @@ export default function RunLogPage() {
                         )}
                       </td>
                       <td className="cell-mono">
-                        {run.cost > 0 ? (
+                        {run.stage === 'clay_push' ? (
+                          <span className="cell-dim" title="Clay costs excluded">—</span>
+                        ) : run.cost > 0 ? (
                           `$${run.cost.toFixed(2)}`
                         ) : (
                           <span className="cell-dim">$0.00</span>
