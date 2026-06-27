@@ -3,6 +3,7 @@
 import useSWR from 'swr'
 import { fetcher } from '@/lib/api'
 import { Bell, Sparkles, Pulse, Broom, Target, Gauge, Cloud } from '@/components/icons'
+import ManualTriggers from './ManualTriggers'
 
 interface SystemDependency {
   nm: string
@@ -222,6 +223,12 @@ export default function HealthPage() {
           )
         })}
       </div>
+
+      {/* Manual Triggers */}
+      <ManualTriggers onTrigger={() => {
+        // Refresh stage health data when a stage is triggered
+        window.location.reload()
+      }} />
 
       {/* Alerts */}
       <div className="card section-gap">
