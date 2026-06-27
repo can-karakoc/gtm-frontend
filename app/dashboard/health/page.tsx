@@ -1,5 +1,7 @@
 'use client'
 
+import useSWR from 'swr'
+import { fetcher } from '@/lib/api'
 import { Bell, Sparkles, Pulse, Broom, Target, Gauge, Cloud } from '@/components/icons'
 
 interface SystemDependency {
@@ -31,6 +33,11 @@ interface Alert {
 }
 
 export default function HealthPage() {
+  // Fetch stage health from API
+  const { data: stageHealthData } = useSWR('/api/data/stage-health', fetcher, {
+    refreshInterval: 30000 // Refresh every 30 seconds
+  })
+
   // Mock data - System dependencies
   const systemDependencies: SystemDependency[] = [
     { nm: 'Pipeline service', st: 'ok', v: '3d 14h', m: 'uptime · gtm-pipeline.fly.dev' },
@@ -39,65 +46,36 @@ export default function HealthPage() {
     { nm: 'Attio API', st: 'ok', v: '118ms', m: 'DEV Outbound workspace' }
   ]
 
-  // Mock data - Stage health
-  const stageHealth: StageHealth[] = [
-    {
-      nm: 'clean',
-      st: 'ok',
-      last: '2m ago',
-      rows: '8',
-      next: '18m',
-      pct: 14,
-      err: '0',
-      enabled: 1,
-      c: '#4FA0F0',
-      ic: 'broom'
-    },
-    {
-      nm: 'name_enrich',
-      st: 'ok',
-      last: '11m ago',
-      rows: '24',
-      next: '19m',
-      pct: 38,
-      err: '0',
-      enabled: 1,
-      c: '#38BDF8',
-      ic: 'target'
-    },
-    {
-      nm: 'clay_push',
-      st: 'warn',
-      last: '34m ago',
-      rows: '20',
-      next: 'budget',
-      pct: 92,
-      err: '0',
-      enabled: 1,
-      note: '80% of daily budget used',
-      c: '#8B7BFF',
-      ic: 'sparkles'
-    },
-    {
-      nm: 'score',
-      st: 'ok',
-      last: '4m ago',
-      rows: '46',
-      next: '11m',
-      pct: 26,
-      err: '0',
-      enabled: 1,
-      c: '#5FD0C0',
-      ic: 'gauge'
-    },
-    {
-      nm: 'sync',
-      st: 'warn',
-      last: '1h 6m ago',
-      rows: '0',
-      next: 'paused',
-      pct: 100,
-      err: '3',
+  // Icon mapping for stages
+  const iconMap: Record<string, string> = {
+    'clean': 'broom',
+    'name_enrich': 'target',
+    'clay_push': 'sparkles',
+    'score': 'gauge',
+    'sync': 'cloud'
+  }
+
+  // Transform API data to match component format
+  const stageHealth: StageHealth[] = stageHealthData?.stages?.map((stage: any) => ({
+    nm: stage.name,
+    st: stage.status as 'ok' | 'warn' | 'err' | 'off',
+    last: stage.last_run,
+    rows: stage.rows,
+    next: stage.next,
+    pct: stage.progress,
+    err: stage.errors,
+    enabled: stage.enabled ? 1 : 0,
+    note: stage.note,
+    c: stage.color,
+    ic: iconMap[stage.name] || 'pulse'
+  })) || [{
+    nm: 'clean',
+    st: 'off',
+    last: 'loading...',
+    rows: '0',
+    next: 'manual',
+    pct: 0,
+    err: '0',
       enabled: 1,
       note: 'migration pending',
       c: '#22D3EE',
