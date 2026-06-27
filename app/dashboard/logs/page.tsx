@@ -1,6 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
+import useSWR from 'swr'
+import { fetcher } from '@/lib/api'
 
 // Icons (SVG components)
 const Icon = {
@@ -48,37 +50,20 @@ interface RunError {
 }
 
 interface Run {
+  id: number
   stage: string
-  t: string
-  dur: string
-  cl: number
-  ok: number
-  fail: number
+  time: string
+  started_at: string
+  duration: string
+  rows_claimed: number
+  rows_succeeded: number
+  rows_failed: number
   cost: number
-  trig: string
-  err?: RunError[]
-  meta?: string
+  triggered_by: string
+  errors?: RunError[]
 }
 
-// Mock data
-const RUNS: Run[] = [
-  {stage:'score', t:'14:41:02', dur:'3.1s', cl:46, ok:46, fail:0, cost:0, trig:'scheduler'},
-  {stage:'name_enrich', t:'14:30:18', dur:'1m 12s', cl:30, ok:27, fail:3, cost:0.31, trig:'scheduler', err:[
-    {domain:'casa-marbella.es', provider:'snov_domain_search', code:'RATE_LIMIT', msg:'429 — credit window exhausted, retry in 600s'},
-    {domain:'lakeside-cabins.co', provider:'website_scrape', code:'TIMEOUT', msg:'fetch exceeded 8s'},
-    {domain:'urbanstaysptl.com', provider:'prospeo', code:'NO_MATCH', msg:'no contact for domain'}
-  ]},
-  {stage:'clay_push', t:'14:08:55', dur:'0.9s', cl:20, ok:20, fail:0, cost:0.60, trig:'scheduler'},
-  {stage:'sync', t:'13:35:40', dur:'—', cl:0, ok:0, fail:3, cost:0, trig:'scheduler', err:[
-    {domain:'(all)', provider:'attio_sync', code:'SCHEMA_MISSING', msg:'column attio_list_entry_id not found — apply pending migration before sync'}
-  ]},
-  {stage:'clean', t:'13:30:11', dur:'22s', cl:100, ok:94, fail:6, cost:0.01, trig:'scheduler'},
-  {stage:'clay_push', t:'13:08:02', dur:'1.1s', cl:20, ok:19, fail:1, cost:0.57, trig:'manual'},
-  {stage:'score', t:'12:56:30', dur:'2.8s', cl:52, ok:52, fail:0, cost:0, trig:'scheduler'},
-  {stage:'name_enrich', t:'12:30:44', dur:'1m 30s', cl:30, ok:28, fail:2, cost:0.34, trig:'scheduler'},
-  {stage:'clean', t:'12:10:09', dur:'19s', cl:100, ok:97, fail:3, cost:0.01, trig:'scheduler'},
-  {stage:'ingest', t:'11:42:55', dur:'8.4s', cl:312, ok:283, fail:0, cost:0, trig:'manual', meta:'29 duplicates skipped'}
-]
+// Removed mock data - now fetching from API
 
 // Color map
 const STAGE_COLORS: Record<string, [string, string]> = {
@@ -162,22 +147,49 @@ function MiniLine({ values, color }: { values: number[]; color: string }) {
 export default function RunLogPage() {
   const [expandedRun, setExpandedRun] = useState<number | null>(null)
 
-  // Daily spend data
-  const daily = [1.9, 2.4, 2.1, 2.8, 3.1, 2.6, 2.34]
+  // Fetch real pipeline runs from API
+  const { data: runsData, error } = useSWR('/api/data/recent-runs', fetcher, {
+    refreshInterval: 30000 // Auto-refresh every 30 seconds
+  })
+
+  const runs: Run[] = runsData?.runs || []
+
+  // Calculate today's total cost from runs
+  const todayCost = runs.reduce((sum, run) => sum + (run.cost || 0), 0)
+
+  // Calculate cost by stage (aggregate from all runs)
+  const costByStageMap: Record<string, number> = {}
+  runs.forEach(run => {
+    if (!costByStageMap[run.stage]) {
+      costByStageMap[run.stage] = 0
+    }
+    costByStageMap[run.stage] += run.cost || 0
+  })
+
+  const stageColorMap: Record<string, string> = {
+    'clay_push': '#8B7BFF',
+    'name_enrich': '#38BDF8',
+    'clean': '#4FA0F0',
+    'score': '#5FD0C0',
+    'sync': '#22D3EE'
+  }
+
+  const byStage = Object.entries(costByStageMap)
+    .map(([stage, cost]) => ({
+      name: stage.replace(/_/g, ' '),
+      cost,
+      color: stageColorMap[stage] || '#9CA9BA'
+    }))
+    .sort((a, b) => b.cost - a.cost)
+
+  const maxCost = Math.max(...byStage.map(s => s.cost), 0.01) // Avoid division by zero
+
+  // For now, use mock data for daily trend (would need date-based aggregation from backend)
+  const daily = [0.12, 0.08, 0.15, 0.21, 0.18, 0.09, todayCost]
   const cumulative = daily.reduce((acc: number[], val, i) => {
     acc.push((acc[i - 1] || 0) + val)
     return acc
   }, [])
-
-  // Cost by stage
-  const byStage = [
-    { name: 'Clay enrichment', cost: 10.80, color: '#8B7BFF' },
-    { name: 'Name enrich (Snov/scrape)', cost: 6.40, color: '#38BDF8' },
-    { name: 'Clean (LLM)', cost: 0.30, color: '#4FA0F0' },
-    { name: 'Score', cost: 0, color: '#5FD0C0' },
-    { name: 'Sync', cost: 0, color: '#22D3EE' }
-  ]
-  const maxCost = Math.max(...byStage.map(s => s.cost))
 
   const toggleRun = (index: number) => {
     setExpandedRun(expandedRun === index ? null : index)
@@ -208,7 +220,7 @@ export default function RunLogPage() {
               {Icon.dollar} Daily spend
             </div>
             <span className="mono" style={{ fontSize: '18px', fontWeight: 600, color: 'var(--accent)' }}>
-              $2.34
+              ${todayCost.toFixed(2)}
             </span>
           </div>
           <MiniBars values={daily} color="#F5B13D" />
@@ -236,27 +248,35 @@ export default function RunLogPage() {
           <div className="card-title" style={{ fontSize: '13px', marginBottom: '14px' }}>
             {Icon.sparkles} Cost by stage
           </div>
-          {byStage.map((stage, i) => (
-            <div key={i} className="bar-row" style={{ padding: '6px 0' }}>
-              <div className="lab" style={{ width: '150px', flexBasis: '150px', fontSize: '11.5px' }}>
-                {stage.name}
-              </div>
-              <div className="bar-track" style={{ height: '18px' }}>
-                <div
-                  className="bar-fill"
-                  style={{
-                    width: `${stage.cost > 0 ? (stage.cost / maxCost) * 100 : 1}%`,
-                    background: stage.color
-                  }}
-                >
-                  ${stage.cost.toFixed(2)}
+          {byStage.length > 0 ? (
+            byStage.map((stage, i) => (
+              <div key={i} className="bar-row" style={{ padding: '6px 0' }}>
+                <div className="lab" style={{ width: '150px', flexBasis: '150px', fontSize: '11.5px' }}>
+                  {stage.name}
+                </div>
+                <div className="bar-track" style={{ height: '18px' }}>
+                  <div
+                    className="bar-fill"
+                    style={{
+                      width: `${stage.cost > 0 ? (stage.cost / maxCost) * 100 : 1}%`,
+                      background: stage.color
+                    }}
+                  >
+                    ${stage.cost.toFixed(2)}
+                  </div>
                 </div>
               </div>
+            ))
+          ) : (
+            <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-dim)', fontSize: '12px' }}>
+              No cost data yet
             </div>
-          ))}
-          <div className="mono" style={{ fontSize: '10px', color: 'var(--text-faint)', marginTop: '8px' }}>
-            Clay is 62% of spend — the lever to watch.
-          </div>
+          )}
+          {byStage.length > 0 && (
+            <div className="mono" style={{ fontSize: '10px', color: 'var(--text-faint)', marginTop: '8px' }}>
+              Total cost across all stages: ${byStage.reduce((sum, s) => sum + s.cost, 0).toFixed(2)}
+            </div>
+          )}
         </div>
       </div>
 
@@ -290,61 +310,69 @@ export default function RunLogPage() {
               </tr>
             </thead>
             <tbody>
-              {RUNS.map((run, i) => (
-                <React.Fragment key={i}>
-                  <tr
-                    className={run.err ? 'clickable' : ''}
-                    onClick={() => run.err && toggleRun(i)}
-                  >
-                    <td><Badge label={run.stage} stage={run.stage} /></td>
-                    <td className="cell-mono cell-dim">{run.t}</td>
-                    <td className="cell-mono">{run.dur}</td>
-                    <td className="cell-mono">{run.cl}</td>
-                    <td className="cell-mono">
-                      <span style={{ color: 'var(--good)' }}>{run.ok}</span>
-                      {' / '}
-                      {run.fail > 0 ? (
-                        <span style={{ color: 'var(--bad)' }}>{run.fail}</span>
-                      ) : (
-                        <span className="cell-dim">0</span>
-                      )}
-                    </td>
-                    <td className="cell-mono">
-                      {run.cost > 0 ? (
-                        `$${run.cost.toFixed(2)}`
-                      ) : (
-                        <span className="cell-dim">$0.00</span>
-                      )}
-                    </td>
-                    <td>
-                      <span className="badge" style={{ fontSize: '10px' }}>
-                        {run.trig}
-                      </span>
-                    </td>
-                    <td style={{ width: '24px', color: 'var(--text-faint)' }}>
-                      {run.err && Icon.chev}
-                    </td>
-                  </tr>
-                  {run.err && (
-                    <tr className={`run-detail ${expandedRun === i ? 'open' : ''}`}>
-                      <td colSpan={8}>
-                        <div className="inner">
-                          <div className="err-json">
-                            {run.err.map((e, j) => (
-                              <div key={j}>
-                                • [{e.code}] {e.domain} → {e.provider}
-                                <br />
-                                {'  '}{e.msg}
-                                {j < run.err!.length - 1 && <br />}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
+              {runs.length === 0 ? (
+                <tr>
+                  <td colSpan={8} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-dim)' }}>
+                    {error ? 'Error loading runs' : 'No pipeline runs yet'}
+                  </td>
+                </tr>
+              ) : (
+                runs.map((run, i) => (
+                  <React.Fragment key={run.id || i}>
+                    <tr
+                      className={run.errors ? 'clickable' : ''}
+                      onClick={() => run.errors && toggleRun(i)}
+                    >
+                      <td><Badge label={run.stage} stage={run.stage} /></td>
+                      <td className="cell-mono cell-dim">{run.time}</td>
+                      <td className="cell-mono">{run.duration}</td>
+                      <td className="cell-mono">{run.rows_claimed}</td>
+                      <td className="cell-mono">
+                        <span style={{ color: 'var(--good)' }}>{run.rows_succeeded}</span>
+                        {' / '}
+                        {run.rows_failed > 0 ? (
+                          <span style={{ color: 'var(--bad)' }}>{run.rows_failed}</span>
+                        ) : (
+                          <span className="cell-dim">0</span>
+                        )}
+                      </td>
+                      <td className="cell-mono">
+                        {run.cost > 0 ? (
+                          `$${run.cost.toFixed(2)}`
+                        ) : (
+                          <span className="cell-dim">$0.00</span>
+                        )}
+                      </td>
+                      <td>
+                        <span className="badge" style={{ fontSize: '10px' }}>
+                          {run.triggered_by}
+                        </span>
+                      </td>
+                      <td style={{ width: '24px', color: 'var(--text-faint)' }}>
+                        {run.errors && Icon.chev}
                       </td>
                     </tr>
-                  )}
-                </React.Fragment>
-              ))}
+                    {run.errors && (
+                      <tr className={`run-detail ${expandedRun === i ? 'open' : ''}`}>
+                        <td colSpan={8}>
+                          <div className="inner">
+                            <div className="err-json">
+                              {run.errors.map((e, j) => (
+                                <div key={j}>
+                                  • [{e.code}] {e.domain} → {e.provider}
+                                  <br />
+                                  {'  '}{e.msg}
+                                  {j < run.errors!.length - 1 && <br />}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                ))
+              )}
             </tbody>
           </table>
         </div>
