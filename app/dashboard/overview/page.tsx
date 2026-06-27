@@ -4,7 +4,6 @@ import { useMemo } from 'react'
 import useSWR from 'swr'
 import KpiCard from '@/components/kpi-card'
 import EngineFlow from '@/components/engine-flow'
-import EngineStats from '@/components/engine-stats'
 import StageHealthCard from '@/components/stage-health-card'
 import ActivityTable from '@/components/activity-table'
 import { Database, Broom, Target, Beaker, Check, Cloud, Send } from '@/components/icons'
@@ -241,12 +240,7 @@ export default function OverviewPage() {
         ))}
       </div>
 
-      {/* Engine Stats */}
-      <div style={{ marginTop: '16px' }}>
-        <EngineStats />
-      </div>
-
-      {/* Engine Flow */}
+      {/* Engine Flow (includes stats in footer) */}
       <div style={{ marginTop: '16px' }}>
         <EngineFlow stages={STAGES} />
       </div>

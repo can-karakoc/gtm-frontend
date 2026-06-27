@@ -1,4 +1,8 @@
+'use client'
+
 import React from 'react'
+import useSWR from 'swr'
+import { fetcher } from '@/lib/api'
 
 interface Stage {
   name: string
@@ -14,9 +18,26 @@ interface EngineFlowProps {
 }
 
 export default function EngineFlow({ stages }: EngineFlowProps) {
+  // Fetch real engine stats
+  const { data: engineStats } = useSWR('/api/data/engine-stats', fetcher, {
+    refreshInterval: 30000
+  })
+
   if (!stages || stages.length === 0) {
     return <div className="engine-wrap">No stages data</div>
   }
+
+  const {
+    throughput_24h = 0,
+    spend_today = 0,
+    runs_today = 0,
+    ops_latency = 0,
+    clay_budget = 100,
+    clay_used = 0
+  } = engineStats || {}
+
+  const clayPercent = clay_budget > 0 ? Math.min((clay_used / clay_budget) * 100, 100) : 0
+  const clayOverBudget = clay_used > clay_budget
 
   return (
     <div className="engine-wrap">
@@ -73,30 +94,36 @@ export default function EngineFlow({ stages }: EngineFlowProps) {
       <div className="engine-foot">
         <div className="ef-item">
           <div className="l">Throughput · 24h</div>
-          <div className="v">182 rows</div>
+          <div className="v">{throughput_24h} rows</div>
         </div>
         <div className="ef-item" style={{ flex: 1, minWidth: '210px' }}>
           <div className="l">Clay budget · today</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '6px' }}>
             <div className="meter" style={{ flex: 1 }}>
-              <div className="meter-fill" style={{ width: '62%' }}></div>
+              <div
+                className="meter-fill"
+                style={{
+                  width: `${clayPercent}%`,
+                  background: clayOverBudget ? 'linear-gradient(90deg, var(--bad), var(--warn))' : undefined
+                }}
+              ></div>
             </div>
             <span className="mono" style={{ fontSize: '12px' }}>
-              <b style={{ color: 'var(--accent)' }}>62</b>/100
+              <b style={{ color: clayOverBudget ? 'var(--bad)' : 'var(--accent)' }}>{clay_used}</b>/{clay_budget}
             </span>
           </div>
         </div>
         <div className="ef-item">
           <div className="l">Spend · today</div>
-          <div className="v">$2.34</div>
+          <div className="v">${spend_today.toFixed(2)}</div>
         </div>
         <div className="ef-item">
           <div className="l">Runs · today</div>
-          <div className="v">37</div>
+          <div className="v">{runs_today}</div>
         </div>
         <div className="ef-item">
-          <div className="l">p95 latency</div>
-          <div className="v">1.4s</div>
+          <div className="l">ops latency</div>
+          <div className="v">{ops_latency}s</div>
         </div>
       </div>
     </div>
