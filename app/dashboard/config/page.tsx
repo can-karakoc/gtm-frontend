@@ -2,12 +2,13 @@
 
 import { useState } from 'react'
 
-// Mock configuration data
+// Stage configuration with explanations
 const STAGE_CONFIG = [
   {
     key: 'clean',
     name: 'Clean',
-    subtitle: 'liveness + STR',
+    subtitle: 'Validates operators are live STR businesses',
+    description: 'Checks domain liveness and validates they are short-term rental operators (not property managers or other businesses)',
     color: '#4FA0F0',
     interval: 20,
     batch: 100,
@@ -18,7 +19,8 @@ const STAGE_CONFIG = [
   {
     key: 'name_enrich',
     name: 'Name enrich',
-    subtitle: 'scrape + B2B',
+    subtitle: 'Finds decision-maker names via web scraping + B2B APIs',
+    description: 'Uses website scraping and paid B2B providers (Snov, Prospeo, LeadMagic) to find the operator\'s name',
     color: '#38BDF8',
     interval: 30,
     batch: 30,
@@ -29,7 +31,8 @@ const STAGE_CONFIG = [
   {
     key: 'clay_push',
     name: 'Clay push',
-    subtitle: 'budget-gated',
+    subtitle: 'Send to Clay for email + phone enrichment',
+    description: 'Sends operators to Murat\'s Clay workspace for full enrichment (email, phone, LinkedIn). Budget-gated for cost control.',
     color: '#8B7BFF',
     interval: 30,
     batch: 20,
@@ -40,7 +43,8 @@ const STAGE_CONFIG = [
   {
     key: 'score',
     name: 'Score',
-    subtitle: 'ICP + reach',
+    subtitle: 'Calculate ICP fit score based on size, location, tech',
+    description: 'Scores operators 0-100 based on ideal customer profile (property count, location, website quality, etc.)',
     color: '#5FD0C0',
     interval: 15,
     batch: 200,
@@ -51,7 +55,8 @@ const STAGE_CONFIG = [
   {
     key: 'sync',
     name: 'Sync',
-    subtitle: '→ Attio',
+    subtitle: 'Push qualified leads to Attio CRM',
+    description: 'Syncs operators with score ≥55 to Attio for SDR outreach. Only syncs qualified leads.',
     color: '#22D3EE',
     interval: 30,
     batch: 20,
@@ -146,11 +151,10 @@ export default function ConfigurationPage() {
       <div className="page-head">
         <div>
           <div className="eyebrow">Controls</div>
-          <div className="h1">Configuration</div>
+          <div className="h1">Pipeline Configuration</div>
           <div className="sub">
-            Tune batch sizes, intervals, and quality gates. The cost estimate
-            updates live so you never enable spend blindly — Clay push stays
-            gated behind a confirmation.
+            Control how often stages run and how many operators they process per run.
+            Use presets for quick setup or fine-tune each stage individually.
           </div>
         </div>
       </div>
@@ -179,6 +183,9 @@ export default function ConfigurationPage() {
               </div>
               <div className="card-meta">live · applies next tick</div>
             </div>
+            <div style={{ padding: '14px 20px', background: 'var(--bg-raised)', borderBottom: '1px solid var(--border-soft)', fontSize: '12px', color: 'var(--text-mute)', lineHeight: '1.5' }}>
+              <strong style={{ color: 'var(--text)' }}>How it works:</strong> Each stage runs automatically at the interval you set, processing up to the batch size you specify. Toggle stages on/off with the switch on the right.
+            </div>
             <div className="stage-cfg">
               {stageSettings.map(stage => (
                 <div
@@ -191,19 +198,24 @@ export default function ConfigurationPage() {
                       {getStageIcon(stage.key)}
                     </span>
                     <div className="t">
-                      {stage.name}
-                      <small>{stage.subtitle}</small>
+                      <div style={{ fontWeight: 700, fontSize: '14px', marginBottom: '4px' }}>
+                        {stage.name}
+                      </div>
+                      <small style={{ color: 'var(--text-mute)', lineHeight: '1.4' }}>
+                        {stage.subtitle}
+                      </small>
                     </div>
                   </div>
                   <div className="cfg-controls">
                     <div className="ctrl">
                       <div className="cl">
-                        Interval <b>{stage.interval}m</b>
+                        Run every <b>{stage.interval} minutes</b>
                       </div>
                       <input
                         type="range"
                         min="5"
                         max="120"
+                        step="5"
                         value={stage.interval}
                         onChange={e =>
                           handleIntervalChange(
@@ -212,20 +224,27 @@ export default function ConfigurationPage() {
                           )
                         }
                       />
+                      <div style={{ fontSize: '10px', color: 'var(--text-faint)', marginTop: '4px' }}>
+                        5m (fast) ← → 120m (slow)
+                      </div>
                     </div>
                     <div className="ctrl">
                       <div className="cl">
-                        Batch <b>{stage.batch}</b>
+                        Process <b>{stage.batch} operators</b> per run
                       </div>
                       <input
                         type="range"
                         min="10"
                         max={stage.batchMax}
+                        step="10"
                         value={stage.batch}
                         onChange={e =>
                           handleBatchChange(stage.key, parseInt(e.target.value))
                         }
                       />
+                      <div style={{ fontSize: '10px', color: 'var(--text-faint)', marginTop: '4px' }}>
+                        10 (small batches) ← → {stage.batchMax} (large batches)
+                      </div>
                     </div>
                     <label className={`switch ${stage.danger ? 'danger' : ''}`}>
                       <input
@@ -267,21 +286,21 @@ export default function ConfigurationPage() {
                 onClick={() => applyPreset('conservative')}
               >
                 <div className="pn">Conservative</div>
-                <div className="pd">slow · low spend</div>
+                <div className="pd">Run every 60m · Small batches · Low cost</div>
               </button>
               <button
                 className={`preset ${selectedPreset === 'balanced' ? 'sel' : ''}`}
                 onClick={() => applyPreset('balanced')}
               >
                 <div className="pn">Balanced</div>
-                <div className="pd">default</div>
+                <div className="pd">Run every 30m · Medium batches · Recommended</div>
               </button>
               <button
                 className={`preset ${selectedPreset === 'aggressive' ? 'sel' : ''}`}
                 onClick={() => applyPreset('aggressive')}
               >
                 <div className="pn">Aggressive</div>
-                <div className="pd">fast · high spend</div>
+                <div className="pd">Run every 10m · Large batches · High cost</div>
               </button>
             </div>
           </div>
