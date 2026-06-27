@@ -3,7 +3,8 @@
  * Fetches data from FastAPI backend
  */
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+// Always call backend directly at localhost:8000
+const API_URL = 'http://localhost:8000'
 
 /**
  * Generic API fetcher with credentials
