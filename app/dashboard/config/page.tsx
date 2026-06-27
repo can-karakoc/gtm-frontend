@@ -111,13 +111,18 @@ export default function ConfigurationPage() {
 
   // Calculate estimated costs (projection based on current settings)
   const calculateEstimatedCosts = () => {
-    const nameSetting = stageSettings.find(s => s.key === 'name_enrich')
-    const cleanSetting = stageSettings.find(s => s.key === 'clean')
+    if (!pipelineEnabled) {
+      return { nameDaily: 0, cleanDaily: 0, daily: 0 }
+    }
 
-    // Estimate based on batch size and run frequency
-    const runsPerDay = 1440 / (nameSetting?.interval || 30) // minutes in a day / interval
-    const nameDaily = nameSetting && pipelineEnabled ? (nameSetting.batch * runsPerDay * 0.01) : 0
-    const cleanDaily = cleanSetting && pipelineEnabled ? (cleanSetting.batch * runsPerDay * 0.005) : 0
+    // Use actual global settings (not static STAGE_CONFIG)
+    const runsPerDay = 1440 / globalInterval // minutes in a day / interval
+
+    // Cost estimates per operator:
+    // - name_enrich: ~$0.01 per operator (B2B API costs)
+    // - clean: ~$0.005 per operator (domain validation)
+    const nameDaily = globalBatchSize * runsPerDay * 0.01
+    const cleanDaily = globalBatchSize * runsPerDay * 0.005
 
     const daily = nameDaily + cleanDaily
 
