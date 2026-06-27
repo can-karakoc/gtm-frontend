@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import useSWR from 'swr'
 import { fetcher } from '@/lib/api'
 
@@ -78,6 +78,29 @@ export default function ConfigurationPage() {
   const [globalBatchSize, setGlobalBatchSize] = useState(100) // How many operators per batch
   const [minScore, setMinScore] = useState(55)
   const [requireVerifiedEmail, setRequireVerifiedEmail] = useState(false)
+  const [saving, setSaving] = useState(false)
+
+  // Fetch pipeline config from API
+  const { data: configData, error: configError, mutate } = useSWR('/api/data/config', fetcher, {
+    refreshInterval: 30000
+  })
+
+  // Sync local state with fetched config
+  useEffect(() => {
+    if (configData) {
+      // Update pipeline toggle (check if ANY stage is enabled)
+      const anyEnabled = ['clean', 'name_enrich', 'clay_push', 'score', 'sync'].some(
+        stage => configData[`stage_${stage}_enabled`]
+      )
+      setPipelineEnabled(anyEnabled)
+
+      // Use clean stage interval as the global interval (simplified model)
+      setGlobalInterval(configData.interval_clean || 30)
+      setGlobalBatchSize(configData.batch_size_clean || 100)
+      setMinScore(configData.min_score_to_qualify || 55)
+      setRequireVerifiedEmail(configData.require_verified_email || false)
+    }
+  }, [configData])
   const [clayBudget, setClayBudget] = useState(100)
 
   // Fetch real cost data
@@ -140,14 +163,59 @@ export default function ConfigurationPage() {
     setGlobalBatchSize(settings.batchSize)
   }
 
-  const handleSaveConfig = () => {
-    // TODO: Implement API call to save configuration
-    console.log('Saving configuration...', {
-      stageSettings,
-      minScore,
-      requireVerifiedEmail,
-      clayBudget
-    })
+  const handleSaveConfig = async () => {
+    setSaving(true)
+    try {
+      // Build config payload
+      const updates: any = {
+        // Global settings apply to all stages (simplified single-interval model)
+        interval_clean: globalInterval,
+        interval_name_enrich: globalInterval,
+        interval_clay_push: globalInterval,
+        interval_score: globalInterval,
+        interval_sync: globalInterval,
+
+        // Global batch size applies to all stages
+        batch_size_clean: globalBatchSize,
+        batch_size_name_enrich: globalBatchSize,
+        batch_size_clay_push: globalBatchSize,
+        batch_size_score: globalBatchSize,
+        batch_size_sync: globalBatchSize,
+
+        // Stage toggles (master toggle sets ALL stages)
+        stage_clean_enabled: pipelineEnabled,
+        stage_name_enrich_enabled: pipelineEnabled,
+        stage_clay_push_enabled: pipelineEnabled,
+        stage_score_enabled: pipelineEnabled,
+        stage_sync_enabled: pipelineEnabled,
+
+        // Quality gates
+        min_score_to_qualify: minScore,
+        require_verified_email: requireVerifiedEmail
+      }
+
+      const response = await fetch('http://localhost:8000/api/data/config', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updates)
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to save configuration')
+      }
+
+      // Refresh config data
+      await mutate()
+
+      alert('✅ Configuration saved successfully!')
+    } catch (error) {
+      console.error('Error saving config:', error)
+      alert('❌ Failed to save configuration. Check console for details.')
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -282,51 +350,6 @@ export default function ConfigurationPage() {
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
-
-          {/* Presets card */}
-          <div className="card pad" style={{ marginTop: '16px' }}>
-            <div
-              className="card-title"
-              style={{ fontSize: '13px', marginBottom: '12px' }}
-            >
-              <svg
-                width="1em"
-                height="1em"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M13 2L4 14h6l-1 8 9-12h-6z" />
-              </svg>
-              Presets
-            </div>
-            <div className="preset-row">
-              <button
-                className={`preset ${selectedPreset === 'conservative' ? 'sel' : ''}`}
-                onClick={() => applyPreset('conservative')}
-              >
-                <div className="pn">Conservative</div>
-                <div className="pd">Run every 60m · Small batches · Low cost</div>
-              </button>
-              <button
-                className={`preset ${selectedPreset === 'balanced' ? 'sel' : ''}`}
-                onClick={() => applyPreset('balanced')}
-              >
-                <div className="pn">Balanced</div>
-                <div className="pd">Run every 30m · Medium batches · Recommended</div>
-              </button>
-              <button
-                className={`preset ${selectedPreset === 'aggressive' ? 'sel' : ''}`}
-                onClick={() => applyPreset('aggressive')}
-              >
-                <div className="pn">Aggressive</div>
-                <div className="pd">Run every 10m · Large batches · High cost</div>
-              </button>
             </div>
           </div>
 
@@ -491,8 +514,9 @@ export default function ConfigurationPage() {
               justifyContent: 'center'
             }}
             onClick={handleSaveConfig}
+            disabled={saving}
           >
-            Save configuration
+            {saving ? 'Saving...' : 'Save configuration'}
           </button>
           <div
             className="muted"
