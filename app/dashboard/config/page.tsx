@@ -74,6 +74,8 @@ export default function ConfigurationPage() {
   const [stageSettings, setStageSettings] = useState(STAGE_CONFIG)
   const [selectedPreset, setSelectedPreset] = useState<Preset>('balanced')
   const [pipelineEnabled, setPipelineEnabled] = useState(true)
+  const [globalInterval, setGlobalInterval] = useState(30) // How often to pull from raw table
+  const [globalBatchSize, setGlobalBatchSize] = useState(100) // How many operators per batch
   const [minScore, setMinScore] = useState(55)
   const [requireVerifiedEmail, setRequireVerifiedEmail] = useState(false)
   const [clayBudget, setClayBudget] = useState(100)
@@ -127,26 +129,15 @@ export default function ConfigurationPage() {
 
   const applyPreset = (preset: Preset) => {
     setSelectedPreset(preset)
-    const presets: Record<
-      Preset,
-      { interval: number; batchMultiplier: number }
-    > = {
-      conservative: { interval: 60, batchMultiplier: 0.5 },
-      balanced: { interval: 30, batchMultiplier: 1 },
-      aggressive: { interval: 10, batchMultiplier: 1.5 }
+    const presets: Record<Preset, { interval: number; batchSize: number }> = {
+      conservative: { interval: 60, batchSize: 50 },
+      balanced: { interval: 30, batchSize: 100 },
+      aggressive: { interval: 10, batchSize: 200 }
     }
 
     const settings = presets[preset]
-    setStageSettings(prev =>
-      prev.map(s => ({
-        ...s,
-        interval: settings.interval,
-        batch: Math.min(
-          Math.round(s.batch * settings.batchMultiplier),
-          s.batchMax
-        )
-      }))
-    )
+    setGlobalInterval(settings.interval)
+    setGlobalBatchSize(settings.batchSize)
   }
 
   const handleSaveConfig = () => {
@@ -223,8 +214,58 @@ export default function ConfigurationPage() {
               </div>
               <div className="card-meta">{pipelineEnabled ? 'active' : 'paused'}</div>
             </div>
-            <div style={{ padding: '14px 20px', background: 'var(--bg-raised)', borderBottom: '1px solid var(--border-soft)', fontSize: '12px', color: 'var(--text-mute)', lineHeight: '1.5' }}>
-              Configure how often each stage runs and how many operators to process per batch. All stages run automatically when pipeline is enabled.
+            <div style={{ padding: '20px', background: 'var(--bg-raised)', borderBottom: '1px solid var(--border-soft)' }}>
+              <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '12px' }}>
+                Pipeline batch configuration
+              </div>
+
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-mute)', marginBottom: '8px' }}>
+                  Pull from raw table every <b style={{ color: 'var(--brand)' }}>{globalInterval} minutes</b>
+                </div>
+                <input
+                  type="range"
+                  min="5"
+                  max="120"
+                  step="5"
+                  value={globalInterval}
+                  onChange={e => setGlobalInterval(parseInt(e.target.value))}
+                  disabled={!pipelineEnabled}
+                  style={{ width: '100%' }}
+                />
+                <div style={{ fontSize: '10px', color: 'var(--text-faint)', marginTop: '4px' }}>
+                  5m (very frequent) ← → 120m (infrequent)
+                </div>
+              </div>
+
+              <div>
+                <div style={{ fontSize: '12px', color: 'var(--text-mute)', marginBottom: '8px' }}>
+                  Process <b style={{ color: 'var(--brand)' }}>{globalBatchSize} operators</b> per batch through entire funnel
+                </div>
+                <input
+                  type="range"
+                  min="10"
+                  max="500"
+                  step="10"
+                  value={globalBatchSize}
+                  onChange={e => setGlobalBatchSize(parseInt(e.target.value))}
+                  disabled={!pipelineEnabled}
+                  style={{ width: '100%' }}
+                />
+                <div style={{ fontSize: '10px', color: 'var(--text-faint)', marginTop: '4px' }}>
+                  10 (small batches) ← → 500 (large batches)
+                </div>
+              </div>
+
+              <div style={{ marginTop: '12px', padding: '10px', background: 'var(--bg)', borderRadius: '4px', fontSize: '11px', color: 'var(--text-mute)', lineHeight: '1.5' }}>
+                💡 Pipeline pulls {globalBatchSize} operators from raw table every {globalInterval} minutes and processes them through all stages sequentially.
+              </div>
+            </div>
+
+            <div style={{ padding: '20px' }}>
+              <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '8px', color: 'var(--text-mute)' }}>
+                Stage descriptions (automatic processing)
+              </div>
             </div>
             <div className="stage-cfg">
               {stageSettings.map(stage => (
@@ -233,59 +274,16 @@ export default function ConfigurationPage() {
                   className="cfg-row"
                   style={{ '--sc': stage.color } as React.CSSProperties}
                 >
-                  <div className="cfg-name">
-                    <span className="ic" style={{ color: stage.color }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '16px 20px', borderBottom: '1px solid var(--border-soft)' }}>
+                    <span className="ic" style={{ color: stage.color, marginTop: '2px' }}>
                       {getStageIcon(stage.key)}
                     </span>
-                    <div className="t">
-                      <div style={{ fontWeight: 700, fontSize: '14px', marginBottom: '4px' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '4px', color: 'var(--text)' }}>
                         {stage.name}
                       </div>
-                      <small style={{ color: 'var(--text-mute)', lineHeight: '1.4' }}>
+                      <div style={{ fontSize: '12px', color: 'var(--text-mute)', lineHeight: '1.5' }}>
                         {stage.subtitle}
-                      </small>
-                    </div>
-                  </div>
-                  <div className="cfg-controls" style={{ opacity: pipelineEnabled ? 1 : 0.5 }}>
-                    <div className="ctrl">
-                      <div className="cl">
-                        Run every <b>{stage.interval} minutes</b>
-                      </div>
-                      <input
-                        type="range"
-                        min="5"
-                        max="120"
-                        step="5"
-                        value={stage.interval}
-                        onChange={e =>
-                          handleIntervalChange(
-                            stage.key,
-                            parseInt(e.target.value)
-                          )
-                        }
-                        disabled={!pipelineEnabled}
-                      />
-                      <div style={{ fontSize: '10px', color: 'var(--text-faint)', marginTop: '4px' }}>
-                        5m (fast) ← → 120m (slow)
-                      </div>
-                    </div>
-                    <div className="ctrl">
-                      <div className="cl">
-                        Process <b>{stage.batch} operators</b> per run
-                      </div>
-                      <input
-                        type="range"
-                        min="10"
-                        max={stage.batchMax}
-                        step="10"
-                        value={stage.batch}
-                        onChange={e =>
-                          handleBatchChange(stage.key, parseInt(e.target.value))
-                        }
-                        disabled={!pipelineEnabled}
-                      />
-                      <div style={{ fontSize: '10px', color: 'var(--text-faint)', marginTop: '4px' }}>
-                        10 (small batches) ← → {stage.batchMax} (large batches)
                       </div>
                     </div>
                   </div>
