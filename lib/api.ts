@@ -7,14 +7,23 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://gtm-pipeline.fly.dev'
 
 /**
- * Generic API fetcher with credentials
+ * Generic API fetcher with authorization
  */
 export async function fetcher<T = any>(url: string): Promise<T> {
+  // Get token from localStorage
+  const token = typeof window !== 'undefined' ? localStorage.getItem('gtm_token') : null
+
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json'
+  }
+
+  // Add Authorization header if token exists
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+
   const response = await fetch(`${API_URL}${url}`, {
-    credentials: 'include', // Include cookies for auth
-    headers: {
-      'Content-Type': 'application/json'
-    }
+    headers
   })
 
   if (!response.ok) {

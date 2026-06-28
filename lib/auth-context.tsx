@@ -29,19 +29,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     async function restoreSession() {
       try {
-        // Try to get user from API (cookie is auto-sent)
-        const response = await fetch(`${API_URL}/api/auth/me`, {
-          credentials: 'include' // Include cookies
-        })
+        // Try to get token from localStorage
+        const token = localStorage.getItem('gtm_token')
 
-        if (response.ok) {
-          const userData = await response.json()
-          setUser(userData)
-        } else {
-          // Try localStorage as fallback
-          const savedUser = localStorage.getItem('gtm_user')
-          if (savedUser) {
-            setUser(JSON.parse(savedUser))
+        if (token) {
+          // Validate token with backend
+          const response = await fetch(`${API_URL}/api/auth/me`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          })
+
+          if (response.ok) {
+            const userData = await response.json()
+            setUser(userData)
+          } else {
+            // Token invalid, clear it
+            localStorage.removeItem('gtm_token')
+            localStorage.removeItem('gtm_user')
           }
         }
       } catch (error) {
@@ -58,7 +63,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const response = await fetch(`${API_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include', // Include cookies
       body: JSON.stringify({ username, password, remember_me: rememberMe })
     })
 
@@ -69,24 +73,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const userData = data.user
+    const token = data.token
     setUser(userData)
 
-    // Also save to localStorage for quick restore
+    // Save token and user to localStorage
     if (rememberMe) {
+      localStorage.setItem('gtm_token', token)
       localStorage.setItem('gtm_user', JSON.stringify(userData))
     }
   }
 
   async function logout() {
     try {
-      await fetch(`${API_URL}/api/auth/logout`, {
-        method: 'POST',
-        credentials: 'include'
-      })
+      const token = localStorage.getItem('gtm_token')
+      if (token) {
+        await fetch(`${API_URL}/api/auth/logout`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+      }
     } catch (error) {
       console.error('Logout failed:', error)
     } finally {
       setUser(null)
+      localStorage.removeItem('gtm_token')
       localStorage.removeItem('gtm_user')
     }
   }
