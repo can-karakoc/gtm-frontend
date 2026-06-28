@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // Icon components
 const Icons = {
@@ -118,8 +118,20 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const [autoRefresh, setAutoRefresh] = useState(true);
+
+  // Client-side auth protection
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+  // Show nothing while checking auth
+  if (loading || !user) {
+    return null;
+  }
 
   // Get current page from pathname
   const currentPage = pathname.split('/dashboard/')[1] || 'overview';
@@ -127,8 +139,8 @@ export default function DashboardLayout({
 
   // Get user initials
   const getUserInitials = () => {
-    if (!user?.name) return 'U';
-    return user.name
+    if (!user?.full_name) return 'U';
+    return user.full_name
       .split(' ')
       .map((n) => n[0])
       .join('')

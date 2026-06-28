@@ -2,25 +2,8 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
-
-  // Public routes that don't require authentication
-  const publicRoutes = ['/login', '/api']
-  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
-
-  // Check for session cookie
-  const sessionToken = request.cookies.get('session')
-
-  // If not logged in and trying to access protected route, redirect to login
-  if (!sessionToken && !isPublicRoute) {
-    return NextResponse.redirect(new URL('/login', request.url))
-  }
-
-  // If logged in and trying to access login page, redirect to dashboard
-  if (sessionToken && pathname === '/login') {
-    return NextResponse.redirect(new URL('/overview', request.url))
-  }
-
+  // Auth is handled client-side via AuthContext + localStorage
+  // Middleware only handles API route protection if needed
   return NextResponse.next()
 }
 
