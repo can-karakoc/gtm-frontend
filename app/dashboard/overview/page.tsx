@@ -9,6 +9,7 @@ import StageHealthCard from '@/components/stage-health-card'
 import ActivityTable from '@/components/activity-table'
 import { Database, Broom, Target, Beaker, Check, Cloud, Send } from '@/components/icons'
 import { fetcher } from '@/lib/api'
+import { useAutoRefresh } from '@/lib/auto-refresh-context'
 
 // Fallback mock sparkline data (real API doesn't have historical data yet)
 const KPIS = [
@@ -112,11 +113,26 @@ function Sparkline({ data, color }: { data: number[], color: string }) {
 }
 
 export default function OverviewPage() {
-  // Fetch real data from API
-  const { data: kpisData, error: kpisError } = useSWR('/api/data/kpis', fetcher)
-  const { data: pipelineData, error: pipelineError } = useSWR('/api/data/pipeline-counts', fetcher)
-  const { data: stageHealthData } = useSWR('/api/data/stage-health', fetcher)
-  const { data: recentRunsData } = useSWR('/api/data/recent-runs?limit=6', fetcher)
+  // Get auto-refresh settings from context
+  const { refreshInterval } = useAutoRefresh()
+
+  // Fetch real data from API with auto-refresh
+  const { data: kpisData, error: kpisError } = useSWR('/api/data/kpis', fetcher, {
+    refreshInterval,
+    revalidateOnFocus: refreshInterval > 0,
+  })
+  const { data: pipelineData, error: pipelineError } = useSWR('/api/data/pipeline-counts', fetcher, {
+    refreshInterval,
+    revalidateOnFocus: refreshInterval > 0,
+  })
+  const { data: stageHealthData } = useSWR('/api/data/stage-health', fetcher, {
+    refreshInterval,
+    revalidateOnFocus: refreshInterval > 0,
+  })
+  const { data: recentRunsData } = useSWR('/api/data/recent-runs?limit=6', fetcher, {
+    refreshInterval,
+    revalidateOnFocus: refreshInterval > 0,
+  })
 
   // Transform API data to KPI cards format
   const KPIS = useMemo(() => {

@@ -7,6 +7,7 @@ import ChartDonut from '@/components/chart-donut'
 import Histogram from '@/components/histogram'
 import { Beaker, Gauge, User, Target, Funnel, Bolt } from '@/components/icons'
 import { fetcher } from '@/lib/api'
+import { useAutoRefresh } from '@/lib/auto-refresh-context'
 
 // Custom labels for enrichment tiers (matching operators page)
 const TIER_LABELS: Record<string, string> = {
@@ -80,12 +81,13 @@ const STATUS_INFO: Record<string, string> = {
 
 export default function FunnelPage() {
   const [hoveredStatus, setHoveredStatus] = useState<string | null>(null)
+  const { refreshInterval } = useAutoRefresh()
 
-  // Fetch funnel data from API
-  const { data: tierData } = useSWR('/api/data/funnel/enrichment-tiers', fetcher)
-  const { data: scoreData } = useSWR('/api/data/funnel/score-distribution', fetcher)
-  const { data: reachData } = useSWR('/api/data/funnel/reachability-matrix', fetcher)
-  const { data: statusCounts } = useSWR('/api/data/status-counts', fetcher)
+  // Fetch funnel data from API with auto-refresh
+  const { data: tierData } = useSWR('/api/data/funnel/enrichment-tiers', fetcher, { refreshInterval })
+  const { data: scoreData } = useSWR('/api/data/funnel/score-distribution', fetcher, { refreshInterval })
+  const { data: reachData } = useSWR('/api/data/funnel/reachability-matrix', fetcher, { refreshInterval })
+  const { data: statusCounts } = useSWR('/api/data/status-counts', fetcher, { refreshInterval })
 
   const tiers = (tierData as any)?.tiers || []
   const totalEnriched = (tierData as any)?.total || 0

@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import useSWR from 'swr'
 import { fetcher } from '@/lib/api'
+import { useAutoRefresh } from '@/lib/auto-refresh-context'
 
 // Icons (SVG components)
 const Icon = {
@@ -146,15 +147,16 @@ function MiniLine({ values, color }: { values: number[]; color: string }) {
 
 export default function RunLogPage() {
   const [expandedRun, setExpandedRun] = useState<number | null>(null)
+  const { refreshInterval } = useAutoRefresh()
 
-  // Fetch real pipeline runs from API
+  // Fetch real pipeline runs from API with auto-refresh
   const { data: runsData, error } = useSWR('/api/data/recent-runs', fetcher, {
-    refreshInterval: 30000 // Auto-refresh every 30 seconds
+    refreshInterval
   })
 
   // Fetch cost summary
   const { data: costData } = useSWR('/api/data/cost-summary', fetcher, {
-    refreshInterval: 30000
+    refreshInterval
   })
 
   const runs: Run[] = runsData?.runs || []

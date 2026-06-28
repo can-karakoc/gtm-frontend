@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
+import { AutoRefreshProvider, useAutoRefresh } from '@/lib/auto-refresh-context';
 import { useState, useEffect } from 'react';
 
 // Icon components
@@ -111,7 +112,7 @@ const BREADCRUMB_MAP: Record<string, string> = {
   design: 'Design System',
 };
 
-export default function DashboardLayout({
+function DashboardLayoutInner({
   children,
 }: {
   children: React.ReactNode;
@@ -119,7 +120,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout, loading } = useAuth();
-  const [autoRefresh, setAutoRefresh] = useState(true);
+  const { autoRefresh, setAutoRefresh } = useAutoRefresh();
 
   // Client-side auth protection
   useEffect(() => {
@@ -275,5 +276,18 @@ export default function DashboardLayout({
         {children}
       </div>
     </div>
+  );
+}
+
+// Wrap with AutoRefreshProvider
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <AutoRefreshProvider>
+      <DashboardLayoutInner>{children}</DashboardLayoutInner>
+    </AutoRefreshProvider>
   );
 }
