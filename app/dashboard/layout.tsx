@@ -153,11 +153,20 @@ function DashboardLayoutInner({
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
         const res = await fetch(`${apiUrl}/api/search?q=${encodeURIComponent(searchQuery)}`);
+        if (!res.ok) {
+          console.warn('Search API returned:', res.status);
+          setSearchResults({ operators: [], runs: [], total: 0 });
+          setShowSearchResults(false);
+          setSearchLoading(false);
+          return;
+        }
         const data = await res.json();
         setSearchResults(data);
         setShowSearchResults(true);
       } catch (error) {
         console.error('Search error:', error);
+        setSearchResults({ operators: [], runs: [], total: 0 });
+        setShowSearchResults(false);
       }
       setSearchLoading(false);
     }, 300); // Debounce 300ms
@@ -171,10 +180,16 @@ function DashboardLayoutInner({
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
         const res = await fetch(`${apiUrl}/api/alerts`);
+        if (!res.ok) {
+          console.warn('Alerts API returned:', res.status);
+          setAlerts([]); // Empty alerts if API fails
+          return;
+        }
         const data = await res.json();
-        setAlerts(data);
+        setAlerts(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error('Alerts error:', error);
+        setAlerts([]); // Empty alerts on error
       }
     };
 
