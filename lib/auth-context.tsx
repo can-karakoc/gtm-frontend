@@ -62,12 +62,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       body: JSON.stringify({ username, password, remember_me: rememberMe })
     })
 
+    const data = await response.json()
+
     if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.detail || 'Login failed')
+      throw new Error(data.detail || 'Login failed')
     }
 
-    const { user: userData } = await response.json()
+    const userData = data.user
     setUser(userData)
 
     // Also save to localStorage for quick restore
