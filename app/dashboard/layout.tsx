@@ -123,17 +123,13 @@ export default function DashboardLayout({
 
   // Client-side auth protection
   useEffect(() => {
-    console.log('[DASHBOARD] Auth check - loading:', loading, 'user:', user ? 'EXISTS' : 'NULL')
     if (!loading && !user) {
-      console.log('[DASHBOARD] No user, redirecting to login')
       router.push('/login');
     }
   }, [user, loading, router]);
 
   // Show nothing while checking auth
-  console.log('[DASHBOARD] Render check - loading:', loading, 'user:', user ? 'EXISTS' : 'NULL')
   if (loading || !user) {
-    console.log('[DASHBOARD] Returning null (loading or no user)')
     return null;
   }
 
