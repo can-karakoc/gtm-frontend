@@ -152,7 +152,10 @@ function DashboardLayoutInner({
       setSearchLoading(true);
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-        const res = await fetch(`${apiUrl}/api/search?q=${encodeURIComponent(searchQuery)}`);
+        const url = `${apiUrl}/api/search?q=${encodeURIComponent(searchQuery)}`;
+        console.log('🔍 Searching:', url);
+        const res = await fetch(url);
+        console.log('📡 Response status:', res.status);
         if (!res.ok) {
           console.warn('Search API returned:', res.status);
           setSearchResults({ operators: [], runs: [], total: 0 });
@@ -161,10 +164,11 @@ function DashboardLayoutInner({
           return;
         }
         const data = await res.json();
+        console.log('📦 Search results:', data);
         setSearchResults(data);
         setShowSearchResults(true);
       } catch (error) {
-        console.error('Search error:', error);
+        console.error('❌ Search error:', error);
         setSearchResults({ operators: [], runs: [], total: 0 });
         setShowSearchResults(false);
       }
