@@ -19,10 +19,14 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
 
+    console.log('[LOGIN PAGE] Form submitted')
+
     try {
       await login(username, password, rememberMe)
+      console.log('[LOGIN PAGE] Login successful, redirecting to dashboard')
       router.push('/dashboard/overview')
     } catch (err) {
+      console.error('[LOGIN PAGE] Login error:', err)
       setError(err instanceof Error ? err.message : 'Login failed')
     } finally {
       setLoading(false)

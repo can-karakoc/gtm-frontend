@@ -28,30 +28,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Restore session on mount
   useEffect(() => {
     async function restoreSession() {
+      console.log('[AUTH] Restoring session...')
       try {
         // Try to get token from localStorage
         const token = localStorage.getItem('gtm_token')
+        console.log('[AUTH] Token from localStorage:', token ? 'EXISTS' : 'MISSING')
 
         if (token) {
           // Validate token with backend
+          console.log('[AUTH] Validating token with:', `${API_URL}/api/auth/me`)
           const response = await fetch(`${API_URL}/api/auth/me`, {
             headers: {
               'Authorization': `Bearer ${token}`
             }
           })
 
+          console.log('[AUTH] Validation response status:', response.status)
+
           if (response.ok) {
             const userData = await response.json()
+            console.log('[AUTH] User data received:', userData)
             setUser(userData)
           } else {
             // Token invalid, clear it
+            console.log('[AUTH] Token invalid, clearing storage')
             localStorage.removeItem('gtm_token')
             localStorage.removeItem('gtm_user')
           }
         }
       } catch (error) {
-        console.error('Session restore failed:', error)
+        console.error('[AUTH] Session restore failed:', error)
       } finally {
+        console.log('[AUTH] Setting loading=false')
         setLoading(false)
       }
     }
@@ -60,13 +68,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [API_URL])
 
   async function login(username: string, password: string, rememberMe = true) {
+    console.log('[AUTH] Login attempt:', username, 'rememberMe:', rememberMe)
+    console.log('[AUTH] API URL:', API_URL)
+
     const response = await fetch(`${API_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password, remember_me: rememberMe })
     })
 
+    console.log('[AUTH] Login response status:', response.status)
     const data = await response.json()
+    console.log('[AUTH] Login response data:', data)
 
     if (!response.ok) {
       throw new Error(data.detail || 'Login failed')
@@ -74,13 +87,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const userData = data.user
     const token = data.token
+    console.log('[AUTH] Setting user:', userData)
+    console.log('[AUTH] Token received:', token ? 'YES' : 'NO')
     setUser(userData)
 
     // Save token and user to localStorage
     if (rememberMe) {
+      console.log('[AUTH] Saving to localStorage')
       localStorage.setItem('gtm_token', token)
       localStorage.setItem('gtm_user', JSON.stringify(userData))
     }
+    console.log('[AUTH] Login complete!')
   }
 
   async function logout() {
