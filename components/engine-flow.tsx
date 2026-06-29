@@ -1,6 +1,7 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import useSWR from 'swr'
 import { fetcher } from '@/lib/api'
 
@@ -18,6 +19,9 @@ interface EngineFlowProps {
 }
 
 export default function EngineFlow({ stages }: EngineFlowProps) {
+  const router = useRouter()
+  const [isCycling, setIsCycling] = useState(false)
+
   // Fetch real engine stats
   const { data: engineStats } = useSWR('/api/data/engine-stats', fetcher, {
     refreshInterval: 30000
@@ -25,6 +29,41 @@ export default function EngineFlow({ stages }: EngineFlowProps) {
 
   if (!stages || stages.length === 0) {
     return <div className="engine-wrap">No stages data</div>
+  }
+
+  const handleCycleNow = async () => {
+    if (isCycling) return
+
+    setIsCycling(true)
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
+      // Trigger all stages in order
+      const stageNames = ['clean', 'name_enrich', 'clay_push', 'score', 'sync']
+
+      for (const stage of stageNames) {
+        const response = await fetch(`${apiUrl}/run/${stage}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        })
+
+        if (!response.ok) {
+          console.error(`Failed to trigger ${stage}:`, response.status)
+        }
+      }
+
+      // Wait a bit then refresh the page to show updated data
+      setTimeout(() => window.location.reload(), 2000)
+    } catch (error) {
+      console.error('Error triggering cycle:', error)
+      alert('Failed to trigger pipeline cycle. Check console for details.')
+    } finally {
+      setIsCycling(false)
+    }
+  }
+
+  const handleHealthClick = () => {
+    router.push('/dashboard/health')
   }
 
   const {
@@ -49,14 +88,23 @@ export default function EngineFlow({ stages }: EngineFlowProps) {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
-          <button className="btn sm ghost">
+          <button
+            className="btn sm ghost"
+            onClick={handleCycleNow}
+            disabled={isCycling}
+            title="Manually trigger all pipeline stages"
+          >
             <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 12a9 9 0 01-9 9 9 9 0 01-8-5M3 12a9 9 0 019-9 9 9 0 018 5"/>
               <path d="M21 3v5h-5M3 21v-5h5"/>
             </svg>
-            Cycle now
+            {isCycling ? 'Running...' : 'Cycle now'}
           </button>
-          <button className="btn sm">
+          <button
+            className="btn sm"
+            onClick={handleHealthClick}
+            title="View pipeline health and manual controls"
+          >
             <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 12h4l2-6 4 12 2-6h6"/>
             </svg>
