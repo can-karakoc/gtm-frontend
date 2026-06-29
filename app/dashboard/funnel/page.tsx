@@ -35,6 +35,19 @@ const tierColorMap: Record<string, string> = {
   'skipped_pms_host': '#5E6E83',
 }
 
+// Tier descriptions for tooltips
+const TIER_DESCRIPTIONS: Record<string, string> = {
+  'pre_enriched': 'Already had contact data before enrichment - highest quality leads',
+  'clay_enriched': 'Successfully enriched via Clay API - full contact details obtained',
+  'name_missing': 'Enrichment attempted but name data not found',
+  'no_data': 'No contact data available from any source',
+  'publicly_reachable_only': 'Only public website/social contact info available',
+  'no_public_contact': 'No public contact information found on website',
+  'clay_no_data': 'Clay enrichment returned no results',
+  'name_found': 'Name successfully discovered via web scraping',
+  'skipped_pms_host': 'Skipped - detected as PMS platform employee, not operator',
+}
+
 // Status colors
 const statusColorMap: Record<string, string> = {
   synced: '#22D3EE',
@@ -115,18 +128,25 @@ export default function FunnelPage() {
   // Prepare tier segments for donut chart
   const tierSegs = tiers.map((t: any) => ({
     value: t.count,
-    color: tierColorMap[t.tier] || '#9CA9BA'
+    color: tierColorMap[t.tier] || '#9CA9BA',
+    label: TIER_LABELS[t.tier] || t.tier.replace(/_/g, ' '),
+    description: TIER_DESCRIPTIONS[t.tier]
   }))
 
   // Mock name source data (TODO: add API endpoint when name_source tracking is added)
   const NAME_SRC = [
-    { l: 'website', v: 78, c: '#4FA0F0' },
-    { l: 'email_name', v: 41, c: '#22D3EE' },
-    { l: 'snov', v: 32, c: '#38BDF8' },
-    { l: 'leadmagic', v: 9, c: '#35D399' },
-    { l: 'clay', v: 5, c: '#8B7BFF' },
+    { l: 'website', v: 78, c: '#4FA0F0', desc: 'Names extracted from property website content' },
+    { l: 'email_name', v: 41, c: '#22D3EE', desc: 'Names parsed from email addresses (firstname.lastname@domain)' },
+    { l: 'snov', v: 32, c: '#38BDF8', desc: 'Names enriched via Snov.io API' },
+    { l: 'leadmagic', v: 9, c: '#35D399', desc: 'Names discovered via LeadMagic enrichment' },
+    { l: 'clay', v: 5, c: '#8B7BFF', desc: 'Names obtained through Clay waterfall enrichment' },
   ]
-  const nameSegs = NAME_SRC.map((s) => ({ value: s.v, color: s.c }))
+  const nameSegs = NAME_SRC.map((s) => ({
+    value: s.v,
+    color: s.c,
+    label: s.l,
+    description: s.desc
+  }))
   const nameTot = NAME_SRC.reduce((sum, s) => sum + s.v, 0)
 
   // Mock confidence data (TODO: add API endpoint)
