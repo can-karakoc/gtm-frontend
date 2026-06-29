@@ -81,6 +81,8 @@ const STATUS_INFO: Record<string, string> = {
 
 export default function FunnelPage() {
   const [hoveredStatus, setHoveredStatus] = useState<string | null>(null)
+  const [hoveredConfidence, setHoveredConfidence] = useState<string | null>(null)
+  const [hoveredScore, setHoveredScore] = useState<number | null>(null)
   const { refreshInterval } = useAutoRefresh()
 
   // Fetch funnel data from API with auto-refresh
@@ -271,7 +273,12 @@ export default function FunnelPage() {
                     const percentage = total > 0 ? ((value / total) * 100).toFixed(0) : 0
 
                     return (
-                      <div key={index} className="score-row">
+                      <div
+                        key={index}
+                        className="score-row interactive"
+                        onMouseEnter={() => setHoveredScore(index)}
+                        onMouseLeave={() => setHoveredScore(null)}
+                      >
                         <div className="score-label">{label}</div>
                         <div className="score-bar-track">
                           {value > 0 && (
@@ -283,6 +290,22 @@ export default function FunnelPage() {
                               }}
                             >
                               <span className="score-count">{value}</span>
+                            </div>
+                          )}
+                          {hoveredScore === index && value > 0 && (
+                            <div className="bar-tooltip">
+                              <div className="tooltip-title">
+                                Score range: {label}
+                              </div>
+                              <div className="tooltip-stats">
+                                <span><strong>{value}</strong> operators</span>
+                                <span><strong>{percentage}%</strong> of scored</span>
+                              </div>
+                              <div className="tooltip-desc">
+                                {isQualified
+                                  ? `Qualified leads (≥${qualifyThreshold}) - meets ICP threshold for outreach`
+                                  : `Below ICP threshold - lower priority or disqualified`}
+                              </div>
                             </div>
                           )}
                         </div>
@@ -339,23 +362,50 @@ export default function FunnelPage() {
               </div>
             </div>
             <div className="fr-title" style={{ marginTop: '18px' }}>Confidence</div>
-            {conf.map((c) => (
-              <div key={c.label} className="bar-row">
-                <div className="lab" style={{ width: '80px', textAlign: 'right' }}>{c.label}</div>
-                <div className="bar-track">
-                  <div
-                    className="bar-fill"
-                    style={{
-                      width: `${(c.count / confTotal) * 100}%`,
-                      background: c.color,
-                    }}
-                  >
-                    {c.count}
+            {conf.map((c) => {
+              const percentage = ((c.count / confTotal) * 100).toFixed(0)
+              const confInfo: Record<string, string> = {
+                'high': 'Strong validation signals from multiple sources - highest priority contacts',
+                'medium': 'Moderate confidence from partial validation - verify before outreach',
+                'low': 'Limited validation signals - manual verification recommended'
+              }
+              return (
+                <div
+                  key={c.label}
+                  className="bar-row interactive"
+                  onMouseEnter={() => setHoveredConfidence(c.label)}
+                  onMouseLeave={() => setHoveredConfidence(null)}
+                >
+                  <div className="lab" style={{ width: '80px', textAlign: 'right' }}>{c.label}</div>
+                  <div className="bar-track">
+                    <div
+                      className="bar-fill"
+                      style={{
+                        width: `${(c.count / confTotal) * 100}%`,
+                        background: c.color,
+                      }}
+                    >
+                      {c.count}
+                    </div>
+                    {hoveredConfidence === c.label && (
+                      <div className="bar-tooltip">
+                        <div className="tooltip-title">
+                          {c.label} confidence
+                        </div>
+                        <div className="tooltip-stats">
+                          <span><strong>{c.count}</strong> operators</span>
+                          <span><strong>{percentage}%</strong> of named</span>
+                        </div>
+                        <div className="tooltip-desc">
+                          {confInfo[c.label]}
+                        </div>
+                      </div>
+                    )}
                   </div>
+                  <div className="pct">{percentage}%</div>
                 </div>
-                <div className="pct">{((c.count / confTotal) * 100).toFixed(0)}%</div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
 
@@ -717,6 +767,14 @@ export default function FunnelPage() {
           gap: 12px;
         }
 
+        .score-row.interactive {
+          cursor: pointer;
+        }
+
+        .score-row.interactive:hover .score-bar-fill {
+          filter: brightness(1.15);
+        }
+
         .score-label {
           font-family: var(--mono);
           font-size: 12px;
@@ -732,7 +790,7 @@ export default function FunnelPage() {
           background: var(--surface-3);
           border-radius: var(--r-sm);
           position: relative;
-          overflow: hidden;
+          overflow: visible;
         }
 
         .score-bar-fill {
@@ -743,10 +801,6 @@ export default function FunnelPage() {
           justify-content: flex-end;
           padding-right: 12px;
           transition: width 0.6s cubic-bezier(0.2, 0.7, 0.2, 1), filter 0.15s;
-        }
-
-        .score-bar-fill:hover {
-          filter: brightness(1.15);
         }
 
         .score-count {
