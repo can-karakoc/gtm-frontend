@@ -364,6 +364,7 @@ export default function FunnelPage() {
             <div className="fr-title" style={{ marginTop: '18px' }}>Confidence</div>
             {conf.map((c) => {
               const percentage = ((c.count / confTotal) * 100).toFixed(0)
+              const maxConfCount = Math.max(...conf.map(item => item.count))
               const confInfo: Record<string, string> = {
                 'high': 'Strong validation signals from multiple sources - highest priority contacts',
                 'medium': 'Moderate confidence from partial validation - verify before outreach',
@@ -381,7 +382,7 @@ export default function FunnelPage() {
                     <div
                       className="bar-fill"
                       style={{
-                        width: `${(c.count / confTotal) * 100}%`,
+                        width: `${(c.count / maxConfCount) * 100}%`,
                         background: c.color,
                       }}
                     >
