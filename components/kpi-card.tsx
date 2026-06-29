@@ -111,6 +111,7 @@ export default function KPICard({
           border-radius: 13px;
           padding: 15px 16px 14px;
           overflow: hidden;
+          cursor: pointer;
           transition: border-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
                       transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
         }
