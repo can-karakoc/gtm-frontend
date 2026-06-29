@@ -179,7 +179,7 @@ export default function FunnelPage() {
               <Beaker />
               Enrichment quality tiers
             </div>
-            <div className="card-meta">{totalEnriched} enriched</div>
+            <div className="card-meta">{totalEnriched} processed</div>
           </div>
           <div className="card-body">
             <div className="donut-wrap">
